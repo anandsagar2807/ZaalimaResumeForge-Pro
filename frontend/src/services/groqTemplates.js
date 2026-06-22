@@ -9,7 +9,8 @@ export const templateStyles = {
     premium: false,
     description: 'ATS-optimized resume template designed for service-based company placements like TCS, Infosys, Wipro, Cognizant, Accenture, Capgemini, Deloitte, HCL, Tech Mahindra, LTIMindtree, and IBM',
     layout: 'single-column',
-    sections: ['header', 'education', 'skills', 'internships', 'projects', 'certifications', 'achievements', 'codingProfiles', 'extraCurricular']
+    sections: ['header', 'education', 'skills', 'internships', 'projects', 'certifications', 'achievements', 'codingProfiles', 'extraCurricular'],
+    removedSections: []
   },
   minimalist: {
     id: 'minimalist',
@@ -18,7 +19,8 @@ export const templateStyles = {
     premium: false,
     description: 'Clean, distraction-free design that puts your content first',
     layout: 'single-column',
-    sections: ['header', 'summary', 'experience', 'education', 'skills']
+    sections: ['header', 'summary', 'experience', 'education', 'skills'],
+    removedSections: []
   },
   modern: {
     id: 'modern',
@@ -27,7 +29,8 @@ export const templateStyles = {
     premium: false,
     description: 'Contemporary two-column layout with sidebar for skills',
     layout: 'two-column-left',
-    sections: ['header', 'summary', 'skills', 'experience', 'education']
+    sections: ['header', 'summary', 'skills', 'experience', 'education'],
+    removedSections: []
   },
   professional: {
     id: 'professional',
@@ -36,7 +39,8 @@ export const templateStyles = {
     premium: true,
     description: 'Traditional corporate styling with refined typography',
     layout: 'single-column-header',
-    sections: ['header', 'summary', 'experience', 'skills', 'education']
+    sections: ['header', 'summary', 'experience', 'skills', 'education'],
+    removedSections: []
   },
   creative: {
     id: 'creative',
@@ -45,7 +49,8 @@ export const templateStyles = {
     premium: true,
     description: 'Bold colors and modern design for creative professionals',
     layout: 'two-column-right',
-    sections: ['header', 'summary', 'experience', 'skills', 'projects']
+    sections: ['header', 'summary', 'experience', 'skills', 'projects'],
+    removedSections: []
   },
   compact: {
     id: 'compact',
@@ -54,7 +59,8 @@ export const templateStyles = {
     premium: false,
     description: 'Maximize information density without sacrificing readability',
     layout: 'compact-single',
-    sections: ['header', 'summary', 'experience', 'skills', 'education']
+    sections: ['header', 'summary', 'experience', 'skills', 'education'],
+    removedSections: []
   },
   executive: {
     id: 'executive',
@@ -63,7 +69,8 @@ export const templateStyles = {
     premium: true,
     description: 'Premium dark theme for senior leadership positions',
     layout: 'executive-dark',
-    sections: ['header', 'summary', 'achievements', 'experience', 'education']
+    sections: ['header', 'summary', 'achievements', 'experience', 'education'],
+    removedSections: []
   },
   ats: {
     id: 'ats',
@@ -72,7 +79,8 @@ export const templateStyles = {
     premium: false,
     description: 'Plain text format optimized for all applicant tracking systems',
     layout: 'ats-plain',
-    sections: ['header', 'summary', 'skills', 'experience', 'education']
+    sections: ['header', 'summary', 'skills', 'experience', 'education'],
+    removedSections: []
   },
   tech: {
     id: 'tech',
@@ -81,7 +89,8 @@ export const templateStyles = {
     premium: true,
     description: 'Developer-focused layout with tech stack emphasis',
     layout: 'tech-stack',
-    sections: ['header', 'summary', 'skills', 'experience', 'projects', 'education']
+    sections: ['header', 'summary', 'skills', 'experience', 'projects', 'education'],
+    removedSections: []
   },
   devresume: {
     id: 'devresume',
@@ -90,7 +99,8 @@ export const templateStyles = {
     premium: false,
     description: 'Modern ATS-friendly single-page developer resume with clean typography and section hierarchy',
     layout: 'single-column',
-    sections: ['header', 'education', 'skills', 'internships', 'projects', 'certifications', 'codingProfiles', 'hackathons']
+    sections: ['header', 'education', 'skills', 'internships', 'projects', 'certifications', 'codingProfiles', 'hackathons'],
+    removedSections: []
   },
   faang: {
     id: 'faang',
@@ -99,7 +109,8 @@ export const templateStyles = {
     premium: true,
     description: 'Ultra-premium ATS-optimized software engineer resume inspired by FAANG candidates — luxury minimalism with sharp typography hierarchy',
     layout: 'single-column',
-    sections: ['header', 'education', 'skills', 'experience', 'projects', 'certifications', 'achievements', 'codingProfiles', 'hackathons']
+    sections: ['header', 'education', 'skills', 'experience', 'projects', 'certifications', 'achievements', 'codingProfiles', 'hackathons'],
+    removedSections: []
   },
   svengineer: {
     id: 'svengineer',
@@ -108,7 +119,8 @@ export const templateStyles = {
     premium: true,
     description: 'World-class Silicon Valley senior engineer resume — luxurious minimalist design with recruiter-focused layout, open source & leadership sections',
     layout: 'single-column',
-    sections: ['header', 'education', 'skills', 'experience', 'projects', 'openSource', 'certifications', 'competitiveProgramming', 'leadership']
+    sections: ['header', 'education', 'skills', 'experience', 'projects', 'openSource', 'certifications', 'competitiveProgramming', 'leadership'],
+    removedSections: []
   },
   serviceengineer: {
     id: 'serviceengineer',
@@ -117,7 +129,8 @@ export const templateStyles = {
     premium: false,
     description: 'Ultra-professional ATS-friendly software engineer resume optimized for service-based company recruiters (TCS, Infosys, Accenture, Deloitte, Cognizant, Capgemini) and campus placement shortlisting',
     layout: 'single-column',
-    sections: ['header', 'education', 'skills', 'internships', 'projects', 'certifications', 'codingProfiles', 'achievements', 'extraCurricular']
+    sections: ['header', 'education', 'skills', 'internships', 'projects', 'certifications', 'codingProfiles', 'achievements', 'extraCurricular'],
+    removedSections: []
   },
   eliteengineer: {
     id: 'eliteengineer',
@@ -126,7 +139,28 @@ export const templateStyles = {
     premium: true,
     description: 'World-class premium software engineer resume with executive-level professionalism — luxury minimalism, Swiss-style alignment, FAANG resume formatting, recruiter-trusted design',
     layout: 'single-column',
-    sections: ['header', 'profile', 'education', 'skills', 'experience', 'projects', 'certifications', 'codingProfiles', 'leadership']
+    sections: ['header', 'profile', 'education', 'skills', 'experience', 'projects', 'certifications', 'codingProfiles', 'leadership'],
+    removedSections: []
+  },
+  atsexecutive: {
+    id: 'atsexecutive',
+    name: 'ATS Executive',
+    category: 'Executive',
+    premium: true,
+    description: 'Premium ATS-friendly executive resume with bold UPPERCASE section headings, thin horizontal dividers, clean serif typography — designed to pass every ATS while looking FAANG-level professional',
+    layout: 'single-column',
+    sections: ['header', 'summary', 'experience', 'achievements', 'skills', 'education', 'certifications', 'projects'],
+    removedSections: []
+  },
+  koushik: {
+    id: 'koushik',
+    name: 'Student Developer',
+    category: 'Fresher',
+    premium: false,
+    description: 'Clean single-column template for CS students with internships, projects, certifications, coding profiles, and hackathons. Section-divider style.',
+    layout: 'single-column',
+    sections: ['header', 'education', 'skills', 'internships', 'projects', 'certifications', 'codingProfiles', 'hackathons'],
+    removedSections: []
   }
 };
 

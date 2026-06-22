@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const pdfParse = require('pdf-parse');
 
 /**
  * Generate a PDF from HTML content.
@@ -70,4 +71,19 @@ exports.generatePDF = async (htmlContent, options = {}) => {
 
     await browser.close();
     return pdfBuffer;
+};
+
+/**
+ * Extract text from a PDF buffer.
+ * @param {Buffer} pdfBuffer - The PDF file as a buffer
+ * @returns {Promise<string>} - The extracted text
+ */
+exports.extractTextFromPDF = async (pdfBuffer) => {
+    try {
+        const data = await pdfParse(pdfBuffer);
+        return data.text;
+    } catch (err) {
+        console.error('Error extracting text from PDF:', err);
+        throw new Error('Failed to extract text from PDF');
+    }
 };

@@ -28,11 +28,9 @@ exports.generatePDF = async (req, res) => {
     try {
         const { htmlContent } = req.body;
 
-        // Determine if user is Pro — Pro users get clean PDFs, free users get watermarked
-        const isPro = req.user && req.user.subscription.plan === 'pro' && req.user.subscription.status === 'active';
-
+        // All users receive clean, watermark-free PDFs (Pro features unlocked for everyone)
         const pdfBuffer = await pdfService.generatePDF(htmlContent, {
-            addWatermark: !isPro,
+            addWatermark: false,
             userName: req.user ? req.user.name : ''
         });
 
@@ -47,6 +45,21 @@ exports.getResumes = async (req, res) => {
     try {
         const resumes = await Resume.find({ user: req.user.id });
         res.json(resumes);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.parseResume = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const pdfService = require('../services/pdfService');
+        const text = await pdfService.extractTextFromPDF(req.file.buffer);
+
+        res.json({ text, resumeText: text });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

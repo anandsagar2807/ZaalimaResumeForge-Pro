@@ -58,6 +58,7 @@ const TemplateComparison = ({ onClose }) => {
             'ats-friendly': { features: 6, ats: 10, design: 5 },
             'creative': { features: 8, ats: 6, design: 10 },
             'executive': { features: 9, ats: 8, design: 9 },
+            'atsexecutive': { features: 9, ats: 10, design: 8 },
         };
         return scores[templateId]?.[category] || 0;
     };

@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// This client prepends "/api" on every call, so the base URL must be the
+// bare origin WITHOUT a trailing /api. Normalize accordingly: if the env
+// value already includes /api, strip it; otherwise use it as-is.
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const API_URL = rawApiUrl.replace(/\/$/, '').replace(/\/api$/, '');
 
 const api = axios.create({
   baseURL: API_URL,

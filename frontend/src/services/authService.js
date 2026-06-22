@@ -45,8 +45,8 @@ export const authService = {
     return !!localStorage.getItem('token');
   },
 
+  // All Pro features are unlocked for every user.
   isProUser() {
-    const user = this.getCurrentUser();
-    return user?.subscription?.plan === 'pro' && user?.subscription?.status === 'active';
+    return true;
   },
 };

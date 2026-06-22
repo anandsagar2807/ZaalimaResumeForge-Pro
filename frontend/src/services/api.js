@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Normalize the base URL so it always ends with /api, regardless of whether
+// VITE_API_URL includes the /api suffix (e.g. "http://localhost:5001/api")
+// or just the origin (e.g. "http://localhost:5001"). This keeps every service
+// that builds on this client consistent with the Express route mounting
+// (server mounts routes under /api/*).
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_URL = rawApiUrl.replace(/\/$/, '').endsWith('/api')
+  ? rawApiUrl.replace(/\/$/, '')
+  : `${rawApiUrl.replace(/\/$/, '')}/api`;
 
 const api = axios.create({
   baseURL: API_URL,

@@ -31,6 +31,53 @@ const groqRequest = async (messages, temperature = 0.7, maxTokens = 3000) => {
   }
 };
 
+/**
+ * Robustly parse a JSON object out of an LLM response.
+ *
+ * LLMs frequently wrap JSON in markdown code fences (```json ... ```) or
+ * prefix it with conversational prose (e.g. "Here is the analysis: { ... }").
+ * Raw JSON.parse() fails on both cases, which silently returns empty default
+ * data to the user. This helper strips fences and extracts the first balanced
+ * {...} object before parsing.
+ *
+ * @param {string} content - The raw model output.
+ * @returns {object} Parsed JSON object.
+ * @throws {Error} If no valid JSON object can be extracted.
+ */
+const safeJsonParse = (content) => {
+  if (!content || typeof content !== 'string') {
+    throw new Error('Empty AI response');
+  }
+
+  // 1. Strip markdown code fences if present (```json ... ``` or ``` ... ```)
+  let cleaned = content.trim();
+  const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenceMatch) {
+    cleaned = fenceMatch[1].trim();
+  }
+
+  // 2. Try a direct parse first (fast path for clean JSON)
+  try {
+    return JSON.parse(cleaned);
+  } catch (_) {
+    // continue to extraction
+  }
+
+  // 3. Extract the first {...} block (handles prose prefixes/suffixes)
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      return JSON.parse(jsonMatch[0]);
+    } catch (err) {
+      console.error('safeJsonParse: extracted JSON failed to parse:', err.message);
+    }
+  }
+
+  // 4. Last resort — log a snippet so the failure is debuggable
+  console.error('safeJsonParse: no valid JSON found. Response preview:', cleaned.slice(0, 200));
+  throw new Error('AI response did not contain valid JSON');
+};
+
 // 1. Brutal Honest Review
 exports.brutalHonestReview = async (resumeText) => {
   const content = await groqRequest([
@@ -84,7 +131,7 @@ Return valid JSON with this structure:
   ], 0.8, 3500);
 
   try {
-    return JSON.parse(content);
+    return safeJsonParse(content);
   } catch (error) {
     console.error('JSON parse error:', error);
     return {
@@ -166,7 +213,7 @@ Return valid JSON with this structure:
   ], 0.7, 4000);
 
   try {
-    return JSON.parse(content);
+    return safeJsonParse(content);
   } catch (error) {
     console.error('JSON parse error:', error);
     return {
@@ -227,7 +274,7 @@ Return valid JSON with this structure:
   ], 0.7, 3500);
 
   try {
-    return JSON.parse(content);
+    return safeJsonParse(content);
   } catch (error) {
     console.error('JSON parse error:', error);
     return {
@@ -297,7 +344,7 @@ Return valid JSON with this structure:
   ], 0.7, 4000);
 
   try {
-    return JSON.parse(content);
+    return safeJsonParse(content);
   } catch (error) {
     console.error('JSON parse error:', error);
     return {
@@ -385,7 +432,7 @@ Return valid JSON with this structure:
   ], 0.7, 4000);
 
   try {
-    return JSON.parse(content);
+    return safeJsonParse(content);
   } catch (error) {
     console.error('JSON parse error:', error);
     return {
@@ -498,13 +545,9 @@ Be strict but fair. Most resumes score 50-75. Only exceptional resumes score 85+
   ], 0.3, 2000);
 
   try {
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('No JSON found in response');
-    }
-    return JSON.parse(jsonMatch[0]);
+    return safeJsonParse(content);
   } catch (parseError) {
-    console.error('Failed to parse resume strength response:', content);
+    console.error('Failed to parse resume strength response:', parseError.message);
     throw new Error('Failed to analyze resume strength');
   }
 };

@@ -12,3 +12,5 @@ export { default as FAANGTemplate } from './FAANGTemplate';
 export { default as SVEngineerTemplate } from './SVEngineerTemplate';
 export { default as ServiceEngineerTemplate } from './ServiceEngineerTemplate';
 export { default as EliteEngineerTemplate } from './EliteEngineerTemplate';
+export { default as ATSExecutiveTemplate } from './ATSExecutiveTemplate';
+export { default as KoushikTemplate } from './KoushikTemplate';

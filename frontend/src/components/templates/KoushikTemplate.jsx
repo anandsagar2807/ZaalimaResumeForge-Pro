@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
+const KoushikTemplate = ({ data, scale = 1, isPreview = false }) => {
     const {
         personalInfo,
         education,
@@ -9,133 +9,109 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         projects
     } = data || {};
 
-    // ── Service-based company fresher dummy / fallback data ──
-    const name = personalInfo?.fullName || 'Rahul Kumar Singh';
-    const email = personalInfo?.email || 'rahul.singh2024@gmail.com';
-    const phone = personalInfo?.phone || '+91-8765432109';
-    const linkedin = personalInfo?.linkedin || 'linkedin.com/in/rahulsingh2024';
-    const github = personalInfo?.github || 'github.com/rahulsingh2024';
-    const location = personalInfo?.location || personalInfo?.address || 'Hyderabad, Telangana';
+    const name = personalInfo?.fullName || 'Aarav Sharma';
+    const email = personalInfo?.email || 'aarav.sharma2025@gmail.com';
+    const phone = personalInfo?.phone || '+91-9876543210';
+    const linkedin = personalInfo?.linkedin || 'linkedin.com/in/aaravsharma2025';
+    const github = personalInfo?.github || 'github.com/aaravsharma2025';
 
     const educationData = education?.length > 0 ? education : [
         {
-            institution: 'JNTUH College of Engineering, Hyderabad',
-            degree: 'Bachelor of Technology',
+            institution: 'VNR Vignana Jyothi Institute of Engineering, Hyderabad',
+            degree: 'Bachelor of Technology (B.Tech)',
             field: 'Computer Science and Engineering',
-            gpa: '8.42 / 10.00',
-            startDate: 'Aug 2020',
-            endDate: 'May 2024'
+            gpa: '8.45 / 10.00',
+            startDate: 'Aug 2021',
+            endDate: 'May 2025'
         },
         {
             institution: 'Sri Chaitanya Junior College, Hyderabad',
             degree: 'Intermediate (Class XII)',
             field: 'Mathematics, Physics, Chemistry',
-            gpa: '9.21 / 10.00',
-            startDate: 'Jun 2018',
-            endDate: 'Mar 2020'
-        },
-        {
-            institution: 'Delhi Public School, Hyderabad',
-            degree: 'SSC (Class X)',
-            field: 'Secondary School Certificate',
-            gpa: '9.56 / 10.00',
-            startDate: 'Jun 2016',
-            endDate: 'Mar 2018'
+            gpa: '9.62 / 10.00',
+            startDate: 'Jun 2019',
+            endDate: 'Mar 2021'
         }
     ];
 
     const skillsData = skills?.length > 0 ? skills : [
-        { category: 'Programming Languages', items: 'Java, Python, C, SQL' },
-        { category: 'Frontend', items: 'HTML, CSS, JavaScript, React.js' },
-        { category: 'Backend', items: 'Node.js, Express.js, Spring Boot basics' },
-        { category: 'Database', items: 'MySQL, MongoDB basics' },
-        { category: 'Tools & Platforms', items: 'Git, GitHub, Docker basics, AWS basics, VS Code, Postman' }
+        { category: 'Programming Languages', items: 'Java, Python, C++, JavaScript' },
+        { category: 'Frontend', items: 'React.js, HTML5, CSS3, Tailwind CSS' },
+        { category: 'Backend', items: 'Node.js, Express.js, Spring Boot, REST APIs' },
+        { category: 'Database', items: 'MySQL, MongoDB, PostgreSQL' },
+        { category: 'Tools & Platforms', items: 'Git, GitHub, Docker, AWS, VS Code, Postman' }
     ];
 
     const internshipData = experience?.length > 0 ? experience : [
         {
-            company: 'TCS iON',
-            role: 'Web Development Intern',
-            location: 'Hyderabad',
-            startDate: 'Jan 2024',
-            endDate: 'Apr 2024',
+            company: 'Tech Mahindra, Hyderabad',
+            role: 'Full Stack Development Intern',
+            startDate: 'Jan 2025',
+            endDate: 'Apr 2025',
             achievements: [
-                'Developed responsive student management portal with role-based authentication serving 500+ users across 3 departments.',
-                'Implemented REST APIs using Node.js and Express.js, integrated MySQL database, and optimized query performance by 30%.'
+                'Developed responsive web applications using React.js and Node.js, improving page load time by 25%.',
+                'Collaborated with a 6-member team on version control, code reviews, and agile sprint delivery.'
             ]
         },
         {
-            company: 'Infosys Springboard',
-            role: 'Java Full Stack Intern',
-            location: 'Remote',
-            startDate: 'Jun 2023',
-            endDate: 'Aug 2023',
+            company: 'Wipro TalentNext, Remote',
+            role: 'Java Developer Intern',
+            startDate: 'Jun 2024',
+            endDate: 'Aug 2024',
             achievements: [
-                'Built inventory management system using Java, Spring Boot, and MySQL with CRUD operations and PDF report generation.',
-                'Designed RESTful API endpoints following best practices, achieving 95% test coverage through unit and integration testing.'
+                'Built RESTful APIs using Java and Spring Boot with MySQL, handling 1000+ daily requests.',
+                'Implemented unit and integration tests achieving 90% code coverage across service modules.'
             ]
         }
     ];
 
     const projectsData = projects?.length > 0 ? projects : [
         {
-            name: 'Online Examination System',
+            name: 'Smart Campus Portal',
             achievements: [
-                'Developed a responsive full-stack application with user authentication, timer-based quiz engine, and auto-grading functionality.',
-                'Implemented REST APIs for question management and result analytics, supporting 200+ concurrent test sessions.'
+                'Built a full-stack campus management platform with attendance tracking, notices, and result analytics for 2000+ students.',
+                'Implemented role-based authentication and REST APIs with React frontend and Node.js backend.'
             ],
-            techStack: 'React.js, Node.js, Express.js, MySQL'
+            techStack: 'React.js, Node.js, Express.js, MongoDB'
         },
         {
-            name: 'AI Resume Analyzer',
+            name: 'CodePractice Hub',
             achievements: [
-                'Built resume analysis tool using Python and NLP libraries to extract skills, compute ATS compatibility scores, and suggest improvements.',
-                'Integrated keyword matching algorithm with 85% accuracy, processing 100+ resume formats with PDF and DOCX parsing.'
+                'Developed an online coding practice platform with 150+ problems, real-time code execution, and leaderboard ranking.',
+                'Integrated judge API for multi-language support and automated test-case evaluation with 95% accuracy.'
             ],
-            techStack: 'Python, Flask, NLTK, SQLite'
+            techStack: 'React.js, Java, Spring Boot, PostgreSQL'
         },
         {
-            name: 'Hospital Management System',
+            name: 'Expense Tracker App',
             achievements: [
-                'Created patient management platform with appointment booking, billing module, and doctor dashboard for 3 hospital departments.',
-                'Implemented role-based access control and RESTful APIs with proper validation, achieving zero data inconsistency across 50+ test cases.'
+                'Created a personal finance tracker with category-wise analytics, budget alerts, and CSV export functionality.',
+                'Designed responsive UI with charts and secure JWT-based user authentication.'
             ],
-            techStack: 'Java, Spring Boot, MySQL, Thymeleaf'
+            techStack: 'React.js, Python, Flask, SQLite'
         }
     ];
 
     const certificationsData = data?.certifications?.length > 0 ? data.certifications : [
-        { name: 'Java Programming — HackerRank (Gold Badge)', date: '2023' },
-        { name: 'Python for Everybody — Coursera (University of Michigan)', date: '2023' },
-        { name: 'AWS Cloud Practitioner Essentials — AWS Training', date: '2024' },
-        { name: 'CCNA Introduction to Networks — Cisco Networking Academy', date: '2022' },
-        { name: 'Database Management Systems — NPTEL (IIT Kharagpur)', date: '2023' },
-        { name: 'Full Stack Development — Infosys Springboard', date: '2023' }
-    ];
-
-    const achievementsData = data?.achievements?.length > 0 ? data.achievements : [
-        'Solved 450+ problems on LeetCode (Top 15% globally) and 300+ on GeeksforGeeks with strong DSA proficiency.',
-        'Secured 2nd Place in College Hackathon 2023 — built real-time quiz platform with 50+ participants.',
-        'Participated in Smart India Hackathon 2022 (SIH) — developed disaster management tracking prototype.',
-        'Attained Academic Excellence Award — CGPA 8.42, ranked among top 10% of CSE department.',
-        'Completed 5-day Advanced Java Workshop organized by Oracle Academy at JNTUH.'
+        { name: 'Java Programming — HackerRank (Gold Badge), 2024' },
+        { name: 'Python for Everybody — Coursera (University of Michigan), 2023' },
+        { name: 'AWS Cloud Practitioner Essentials — AWS Training, 2024' },
+        { name: 'Full Stack Development — NPTEL (IIT Madras), 2023' }
     ];
 
     const codingProfilesData = data?.codingProfiles?.length > 0 ? data.codingProfiles : [
-        { platform: 'LeetCode', detail: '450+ problems solved | Rating 1,650 | Top 15% Global' },
-        { platform: 'HackerRank', detail: 'Gold Badge in Java | 5-Star in SQL | 200+ problems solved' },
-        { platform: 'GeeksforGeeks', detail: '300+ problems solved | Institute Rank #12 | Potd streak 90+ days' },
-        { platform: 'CodeChef', detail: '2-Star coder | 150+ problems solved | Long Challenge participant' }
+        { platform: 'LeetCode', detail: '350+ problems solved | Rating 1,620 | Top 20% Global' },
+        { platform: 'HackerRank', detail: 'Gold Badge in Java | 5-Star in Python | 180+ problems solved' },
+        { platform: 'GeeksforGeeks', detail: '250+ problems solved | Institute Rank #15 | Potd streak 60+ days' },
+        { platform: 'CodeChef', detail: '2-Star coder | 120+ problems solved | Long Challenge participant' }
     ];
 
-    const extraCurricularData = data?.extraCurricular?.length > 0 ? data.extraCurricular : [
-        'Coordinator — CSE Technical Club (organized 8 workshops on DSA, Web Dev, and Cloud Computing for 200+ students).',
-        'Team Lead — College Cricket Team (led inter-college tournament, fostering collaboration and strategic planning).',
-        'Volunteer — National Service Scheme (NSS) — participated in 5 community drives including digital literacy campaigns.',
-        'Member — ACM Student Chapter — attended 3 national conferences and contributed to open-source documentation projects.'
+    const hackathonsData = data?.hackathons?.length > 0 ? data.hackathons : [
+        'Smart India Hackathon 2024 — Finalist, built a disaster-alert prototype among 40+ competing teams.',
+        'College Hackathon 2023 — Won 2nd Place, developed a real-time quiz platform for 50+ participants.',
+        'CodeFest 2023 — Participated in a 24-hour coding marathon focused on algorithmic problem solving.'
     ];
 
-    // ── Design System ──
     const fonts = "'Calibri', 'Inter', 'Helvetica', 'Arial', sans-serif";
 
     const page = {
@@ -217,7 +193,7 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         width: '3px',
         height: '3px',
         borderRadius: '50%',
-        background: '#1a1a1a'
+        background: '#333333'
     };
 
     const jobHeaderStyle = {
@@ -304,15 +280,6 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         marginBottom: '1px'
     };
 
-    const achievementItemStyle = {
-        fontSize: '8.5px',
-        lineHeight: '1.38',
-        color: '#1a1a1a',
-        paddingLeft: '10px',
-        position: 'relative',
-        marginBottom: '1px'
-    };
-
     const codingProfileItemStyle = {
         fontSize: '8.5px',
         lineHeight: '1.38',
@@ -326,7 +293,7 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         marginRight: '4px'
     };
 
-    const extraCurricularItemStyle = {
+    const hackathonItemStyle = {
         fontSize: '8.5px',
         lineHeight: '1.38',
         color: '#1a1a1a',
@@ -335,7 +302,6 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         marginBottom: '1px'
     };
 
-    // Build visible sections array
     const sections = [];
 
     // Education
@@ -349,10 +315,12 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
                         <div key={i} style={{ marginBottom: '2px' }}>
                             <div style={eduRowStyle}>
                                 <span style={eduInstitutionStyle}>{edu.institution}</span>
-                                <span style={dateStyle}>{edu.startDate} — {edu.endDate}</span>
+                                <span style={dateStyle}>
+                                    {edu.startDate && edu.endDate ? `${edu.startDate} — ${edu.endDate}` : edu.endDate || ''}
+                                </span>
                             </div>
                             <div style={eduDetailStyle}>
-                                {edu.degree} in {edu.field}{edu.gpa ? ` | CGPA: ${edu.gpa}` : ''}
+                                {edu.degree}{edu.field ? ` in ${edu.field}` : ''}{edu.gpa ? ` | CGPA: ${edu.gpa}` : ''}
                             </div>
                         </div>
                     ))}
@@ -379,19 +347,19 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         });
     }
 
-    // Internship Experience
+    // Internships
     if (internshipData && internshipData.length > 0) {
         sections.push({
             key: 'internships',
             content: (
                 <div style={sectionWrap}>
-                    <div style={sectionTitle}>Internship Experience</div>
+                    <div style={sectionTitle}>Internships</div>
                     {internshipData.map((exp, i) => (
                         <div key={i} style={{ marginBottom: '4px' }}>
                             <div style={jobHeaderStyle}>
                                 <span>
                                     <span style={companyStyle}>{exp.company}</span>
-                                    <span style={roleLocationStyle}> · {exp.role} · {exp.location}</span>
+                                    <span style={roleLocationStyle}> · {exp.role || exp.position}</span>
                                 </span>
                                 <span style={dateStyle}>{exp.startDate} — {exp.endDate}</span>
                             </div>
@@ -408,13 +376,13 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         });
     }
 
-    // Academic Projects
+    // Projects
     if (projectsData && projectsData.length > 0) {
         sections.push({
             key: 'projects',
             content: (
                 <div style={sectionWrap}>
-                    <div style={sectionTitle}>Academic Projects</div>
+                    <div style={sectionTitle}>Projects</div>
                     {projectsData.map((proj, i) => (
                         <div key={i} style={{ marginBottom: '3px' }}>
                             <div style={projectHeaderStyle}>{proj.name}</div>
@@ -445,8 +413,7 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
                     <div style={sectionTitle}>Certifications</div>
                     {certificationsData.map((cert, i) => (
                         <div key={i} style={certItemStyle}>
-                            <span style={{ fontWeight: '700', color: '#000000' }}>{cert.name}</span>
-                            {cert.date && <span style={{ color: '#555555' }}> — {cert.date}</span>}
+                            {cert.name}
                         </div>
                     ))}
                 </div>
@@ -454,34 +421,16 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         });
     }
 
-    // Achievements
-    if (achievementsData && achievementsData.length > 0) {
-        sections.push({
-            key: 'achievements',
-            content: (
-                <div style={sectionWrap}>
-                    <div style={sectionTitle}>Achievements</div>
-                    {achievementsData.map((ach, i) => (
-                        <div key={i} style={achievementItemStyle}>
-                            <div style={bulletDot} />
-                            {ach}
-                        </div>
-                    ))}
-                </div>
-            )
-        });
-    }
-
-    // Coding Profiles
+    // Competitive Programming & Coding Profiles
     if (codingProfilesData && codingProfilesData.length > 0) {
         sections.push({
             key: 'codingProfiles',
             content: (
                 <div style={sectionWrap}>
-                    <div style={sectionTitle}>Coding Profiles</div>
+                    <div style={sectionTitle}>Competitive Programming & Coding Profiles</div>
                     {codingProfilesData.map((profile, i) => (
                         <div key={i} style={codingProfileItemStyle}>
-                            <span style={codingPlatformStyle}>{profile.platform}</span>
+                            <span style={codingPlatformStyle}>{profile.platform}:</span>
                             <span>{profile.detail}</span>
                         </div>
                     ))}
@@ -490,15 +439,15 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         });
     }
 
-    // Extra-Curricular Activities
-    if (extraCurricularData && extraCurricularData.length > 0) {
+    // Hackathons
+    if (hackathonsData && hackathonsData.length > 0) {
         sections.push({
-            key: 'extraCurricular',
+            key: 'hackathons',
             content: (
                 <div style={sectionWrap}>
-                    <div style={sectionTitle}>Extra-Curricular Activities</div>
-                    {extraCurricularData.map((item, i) => (
-                        <div key={i} style={extraCurricularItemStyle}>
+                    <div style={sectionTitle}>Hackathons</div>
+                    {hackathonsData.map((item, i) => (
+                        <div key={i} style={hackathonItemStyle}>
                             <div style={bulletDot} />
                             {item}
                         </div>
@@ -508,10 +457,8 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
         });
     }
 
-    // ── Render ──
     return (
         <div style={isPreview ? { ...page, maxHeight: 'none', overflow: 'visible' } : page}>
-            {/* ── HEADER ── */}
             <div style={nameStyle}>{name}</div>
             <div style={contactStyle}>
                 <span>{email}</span>
@@ -521,11 +468,8 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
                 <span style={contactLink}>{linkedin}</span>
                 <span style={{ margin: '0 6px', color: '#cccccc' }}>|</span>
                 <span style={contactLink}>{github}</span>
-                <span style={{ margin: '0 6px', color: '#cccccc' }}>|</span>
-                <span>{location}</span>
             </div>
 
-            {/* ── SECTIONS WITH DIVIDERS ── */}
             {sections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
                 <React.Fragment key={section.key}>
                     {section.content}
@@ -536,4 +480,4 @@ const CampusPlacementTemplate = ({ data, scale = 1, isPreview = false }) => {
     );
 };
 
-export default CampusPlacementTemplate;
+export default KoushikTemplate;

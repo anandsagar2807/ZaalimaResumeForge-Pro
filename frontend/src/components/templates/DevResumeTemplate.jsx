@@ -141,14 +141,16 @@ const DevResumeTemplate = ({ data, scale = 1, isPreview = false }) => {
     letterSpacing: '-0.3px',
     color: '#111111',
     lineHeight: '1.1',
-    marginBottom: '4px'
+    marginBottom: '4px',
+    textAlign: 'center'
   };
 
   const contactRow = {
     fontSize: '8.5px',
     color: '#444444',
     marginBottom: '14px',
-    lineHeight: '1.4'
+    lineHeight: '1.4',
+    textAlign: 'center'
   };
 
   const contactLink = {
@@ -488,7 +490,7 @@ const DevResumeTemplate = ({ data, scale = 1, isPreview = false }) => {
 
   // ── Render ──
   return (
-    <div style={page} className="dev-resume-template">
+    <div style={isPreview ? { ...page, maxHeight: 'none', overflow: 'visible' } : page} className="dev-resume-template">
       {/* ── HEADER ── */}
       <div style={{ marginBottom: '2px' }}>
         <div style={nameStyle}>{name}</div>
@@ -504,10 +506,10 @@ const DevResumeTemplate = ({ data, scale = 1, isPreview = false }) => {
       </div>
 
       {/* ── SECTIONS WITH DIVIDERS ── */}
-      {sections.map((section, index) => (
+      {sections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
         <React.Fragment key={section.key}>
           {section.content}
-          {index < sections.length - 1 && <div style={dividerStyle} />}
+          {index < arr.length - 1 && <div style={dividerStyle} />}
         </React.Fragment>
       ))}
     </div>

@@ -158,7 +158,8 @@ const SVEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
     letterSpacing: '-0.4px',
     color: '#000000',
     lineHeight: '1.1',
-    marginBottom: '1px'
+    marginBottom: '1px',
+    textAlign: 'center'
   };
 
   const roleStyle = {
@@ -167,7 +168,8 @@ const SVEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
     color: '#444444',
     letterSpacing: '0.3px',
     marginBottom: '3px',
-    lineHeight: '1.2'
+    lineHeight: '1.2',
+    textAlign: 'center'
   };
 
   const contactStyle = {
@@ -175,7 +177,8 @@ const SVEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
     color: '#555555',
     lineHeight: '1.4',
     marginBottom: '7px',
-    letterSpacing: '0.15px'
+    letterSpacing: '0.15px',
+    textAlign: 'center'
   };
 
   const contactLink = {
@@ -551,10 +554,10 @@ const SVEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
       </div>
 
       {/* ── SECTIONS WITH DIVIDERS ── */}
-      {sections.map((section, index) => (
+      {sections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
         <React.Fragment key={section.key}>
           {section.content}
-          {index < sections.length - 1 && <div style={dividerStyle} />}
+          {index < arr.length - 1 && <div style={dividerStyle} />}
         </React.Fragment>
       ))}
     </div>

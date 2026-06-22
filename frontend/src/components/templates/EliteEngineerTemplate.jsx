@@ -156,7 +156,7 @@ const EliteEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
         color: '#000000',
         lineHeight: '1.1',
         marginBottom: '2px',
-        textAlign: 'left'
+        textAlign: 'center'
     };
 
     const contactRowStyle = {
@@ -166,7 +166,7 @@ const EliteEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
         marginBottom: '0px',
         letterSpacing: '0.15px',
         display: 'flex',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         alignItems: 'center',
         gap: '0px',
         flexWrap: 'wrap'
@@ -381,126 +381,140 @@ const EliteEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
             <div style={swissRule} />
 
             {/* ── PROFILE ── */}
-            <div style={sectionWrapStyle}>
-                <div style={sectionTitleStyle}>Profile</div>
-                <div style={profileTextStyle}>{profileData}</div>
-            </div>
+            {!(data?.hiddenSections || []).includes('profile') && <>
+                <div style={sectionWrapStyle}>
+                    <div style={sectionTitleStyle}>Profile</div>
+                    <div style={profileTextStyle}>{profileData}</div>
+                </div>
 
-            {/* ── Swiss Rule ── */}
-            <div style={swissRule} />
+                {/* ── Swiss Rule ── */}
+                <div style={swissRule} />
+            </>}
 
             {/* ── EDUCATION ── */}
-            <div style={sectionWrapStyle}>
-                <div style={sectionTitleStyle}>Education</div>
-                {educationData.map((edu, i) => (
-                    <div key={i} style={{ marginBottom: '3px' }}>
-                        <div style={eduRowStyle}>
-                            <span style={eduInstitutionStyle}>{edu.institution}</span>
-                            <span style={eduDateStyle}>{edu.startDate} — {edu.endDate}</span>
+            {!(data?.hiddenSections || []).includes('education') && <>
+                <div style={sectionWrapStyle}>
+                    <div style={sectionTitleStyle}>Education</div>
+                    {educationData.map((edu, i) => (
+                        <div key={i} style={{ marginBottom: '3px' }}>
+                            <div style={eduRowStyle}>
+                                <span style={eduInstitutionStyle}>{edu.institution}</span>
+                                <span style={eduDateStyle}>{edu.startDate} — {edu.endDate}</span>
+                            </div>
+                            <div style={eduDetailStyle}>
+                                {edu.degree} in {edu.field}{edu.gpa ? ` | GPA: ${edu.gpa}` : ''}
+                            </div>
                         </div>
-                        <div style={eduDetailStyle}>
-                            {edu.degree} in {edu.field}{edu.gpa ? ` | GPA: ${edu.gpa}` : ''}
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
 
-            {/* ── Swiss Rule ── */}
-            <div style={swissRule} />
+                {/* ── Swiss Rule ── */}
+                <div style={swissRule} />
+            </>}
 
             {/* ── TECHNICAL SKILLS ── */}
-            <div style={sectionWrapStyle}>
-                <div style={sectionTitleStyle}>Technical Skills</div>
-                {skillsData.map((skill, i) => (
-                    <div key={i} style={skillRowStyle}>
-                        <span style={skillLabelStyle}>{skill.category}:</span>
-                        <span style={skillValueStyle}>{skill.items || skill.name}</span>
-                    </div>
-                ))}
-            </div>
+            {!(data?.hiddenSections || []).includes('skills') && <>
+                <div style={sectionWrapStyle}>
+                    <div style={sectionTitleStyle}>Technical Skills</div>
+                    {skillsData.map((skill, i) => (
+                        <div key={i} style={skillRowStyle}>
+                            <span style={skillLabelStyle}>{skill.category}:</span>
+                            <span style={skillValueStyle}>{skill.items || skill.name}</span>
+                        </div>
+                    ))}
+                </div>
 
-            {/* ── Swiss Rule ── */}
-            <div style={swissRule} />
+                {/* ── Swiss Rule ── */}
+                <div style={swissRule} />
+            </>}
 
             {/* ── EXPERIENCE ── */}
-            <div style={sectionWrapStyle}>
-                <div style={sectionTitleStyle}>Experience</div>
-                {experienceData.map((exp, i) => (
-                    <div key={i} style={{ marginBottom: '5px' }}>
-                        <div style={expHeaderStyle}>
-                            <span>
-                                <span style={companyStyle}>{exp.company}</span>
-                                <span style={roleLocationStyle}>{exp.role} · {exp.location}</span>
-                            </span>
-                            <span style={dateStyle}>{exp.startDate} — {exp.endDate}</span>
-                        </div>
-                        {(exp.achievements || []).map((a, j) => (
-                            <div key={j} style={bulletStyle}>
-                                <div style={bulletDot} />
-                                {a}
+            {!(data?.hiddenSections || []).includes('experience') && <>
+                <div style={sectionWrapStyle}>
+                    <div style={sectionTitleStyle}>Experience</div>
+                    {experienceData.map((exp, i) => (
+                        <div key={i} style={{ marginBottom: '5px' }}>
+                            <div style={expHeaderStyle}>
+                                <span>
+                                    <span style={companyStyle}>{exp.company}</span>
+                                    <span style={roleLocationStyle}>{exp.role} · {exp.location}</span>
+                                </span>
+                                <span style={dateStyle}>{exp.startDate} — {exp.endDate}</span>
                             </div>
-                        ))}
-                    </div>
-                ))}
-            </div>
+                            {(exp.achievements || []).map((a, j) => (
+                                <div key={j} style={bulletStyle}>
+                                    <div style={bulletDot} />
+                                    {a}
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
 
-            {/* ── Swiss Rule ── */}
-            <div style={swissRule} />
+                {/* ── Swiss Rule ── */}
+                <div style={swissRule} />
+            </>}
 
             {/* ── PROJECTS ── */}
-            <div style={sectionWrapStyle}>
-                <div style={sectionTitleStyle}>Projects</div>
-                {projectsData.map((proj, i) => (
-                    <div key={i} style={{ marginBottom: '5px' }}>
-                        <div style={projectHeaderStyle}>{proj.name}</div>
-                        {(proj.achievements || []).map((a, j) => (
-                            <div key={j} style={bulletStyle}>
-                                <div style={bulletDot} />
-                                {a}
-                            </div>
-                        ))}
-                        {proj.techStack && (
-                            <div style={techStackStyle}>
-                                <span style={{ fontWeight: '600', color: '#555555' }}>Tech Stack:</span> {proj.techStack}
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>
+            {!(data?.hiddenSections || []).includes('projects') && <>
+                <div style={sectionWrapStyle}>
+                    <div style={sectionTitleStyle}>Projects</div>
+                    {projectsData.map((proj, i) => (
+                        <div key={i} style={{ marginBottom: '5px' }}>
+                            <div style={projectHeaderStyle}>{proj.name}</div>
+                            {(proj.achievements || []).map((a, j) => (
+                                <div key={j} style={bulletStyle}>
+                                    <div style={bulletDot} />
+                                    {a}
+                                </div>
+                            ))}
+                            {proj.techStack && (
+                                <div style={techStackStyle}>
+                                    <span style={{ fontWeight: '600', color: '#555555' }}>Tech Stack:</span> {proj.techStack}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
 
-            {/* ── Swiss Rule ── */}
-            <div style={swissRule} />
+                {/* ── Swiss Rule ── */}
+                <div style={swissRule} />
+            </>}
 
             {/* ── CERTIFICATIONS ── */}
-            <div style={sectionWrapStyle}>
-                <div style={sectionTitleStyle}>Certifications</div>
-                {certificationsData.map((cert, i) => (
-                    <div key={i} style={certItemStyle}>
-                        <span style={{ fontWeight: '700', color: '#000000' }}>{cert.name}</span>
-                        {cert.date && <span style={{ color: '#555555' }}> — {cert.date}</span>}
-                    </div>
-                ))}
-            </div>
+            {!(data?.hiddenSections || []).includes('certifications') && <>
+                <div style={sectionWrapStyle}>
+                    <div style={sectionTitleStyle}>Certifications</div>
+                    {certificationsData.map((cert, i) => (
+                        <div key={i} style={certItemStyle}>
+                            <span style={{ fontWeight: '700', color: '#000000' }}>{cert.name}</span>
+                            {cert.date && <span style={{ color: '#555555' }}> — {cert.date}</span>}
+                        </div>
+                    ))}
+                </div>
 
-            {/* ── Swiss Rule ── */}
-            <div style={swissRule} />
+                {/* ── Swiss Rule ── */}
+                <div style={swissRule} />
+            </>}
 
             {/* ── CODING ACHIEVEMENTS ── */}
-            <div style={sectionWrapStyle}>
-                <div style={sectionTitleStyle}>Coding Achievements</div>
-                {codingAchievementsData.map((profile, i) => (
-                    <div key={i} style={codingItemStyle}>
-                        <span style={codingPlatformStyle}>{profile.platform}</span>
-                        <span>{profile.detail}</span>
-                    </div>
-                ))}
-            </div>
+            {!(data?.hiddenSections || []).includes('codingProfiles') && <>
+                <div style={sectionWrapStyle}>
+                    <div style={sectionTitleStyle}>Coding Achievements</div>
+                    {codingAchievementsData.map((profile, i) => (
+                        <div key={i} style={codingItemStyle}>
+                            <span style={codingPlatformStyle}>{profile.platform}</span>
+                            <span>{profile.detail}</span>
+                        </div>
+                    ))}
+                </div>
 
-            {/* ── Swiss Rule ── */}
-            <div style={swissRule} />
+                {/* ── Swiss Rule ── */}
+                <div style={swissRule} />
+            </>}
 
             {/* ── LEADERSHIP & ACTIVITIES ── */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('leadership') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Leadership & Activities</div>
                 {leadershipData.map((item, i) => (
                     <div key={i} style={leadershipItemStyle}>
@@ -508,7 +522,7 @@ const EliteEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         {item}
                     </div>
                 ))}
-            </div>
+            </div>}
         </div>
     );
 };

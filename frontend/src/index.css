@@ -641,7 +641,7 @@ html {
   backface-visibility: hidden;
 }
 
-.page-transition-wrapper > * {
+.page-transition-wrapper>* {
   will-change: auto;
 }
 
@@ -663,6 +663,7 @@ html {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -678,6 +679,7 @@ html {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -704,6 +706,7 @@ html {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -718,6 +721,44 @@ html {
   align-items: center;
   position: relative;
   overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Full-height layout helpers for the Resume Builder live preview
+   These establish a definite viewport height so that nested flexbox
+   children (the preview pane + its scroll region) can compute their
+   height and fill the page from top to bottom without collapsing.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Root app shell: lock to the full viewport height (definite height for the
+   flex chain). 100dvh handles mobile browser chrome; 100vh is the fallback. */
+.app-shell-fullheight {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100%;
+}
+
+/* Flex child that must not exceed its parent but should still fill it.
+   `min-height: 0` is the classic flexbox fix that lets an overflow-y-auto
+   descendant scroll instead of pushing the parent taller than the viewport. */
+.flex-fill-minzero {
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* The live preview pane itself: stretch to the full available height of its
+   flex parent and never collapse below it. */
+.preview-pane-fullheight {
+  height: 100%;
+  min-height: 100%;
+}
+
+/* Inner scroll region of the preview: fill the pane and scroll internally. */
+.preview-scroll-fullheight {
+  flex: 1 1 0%;
+  min-height: 0;
+  height: 100%;
 }
 
 /* Premium scroll snap for immersive experience */

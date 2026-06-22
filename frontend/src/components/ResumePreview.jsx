@@ -1,197 +1,242 @@
 import React from 'react';
 import { useResume } from '../context/ResumeContext';
-import { Mail, Phone, MapPin, Linkedin, Briefcase, GraduationCap, Code, Award, Github, Link as LinkIcon, FileText } from 'lucide-react';
+import {
+  CampusPlacementTemplate, MinimalistTemplate, ModernTemplate, ProfessionalTemplate, CreativeTemplate,
+  CompactTemplate, ExecutiveTemplate, ATSTemplate, TechTemplate, DevResumeTemplate,
+  FAANGTemplate, SVEngineerTemplate, ServiceEngineerTemplate, EliteEngineerTemplate,
+  ATSExecutiveTemplate, KoushikTemplate
+} from './templates';
 
-const ResumePreview = () => {
-  const { resumeData, selectedTemplate } = useResume();
-  const { personalInfo, education, experience, skills, projects } = resumeData;
+// ─────────────────────────────────────────────────────────────────────────────
+// Template component registry — lowercase IDs matching groqTemplates.js
+// ─────────────────────────────────────────────────────────────────────────────
+const templateComponents = {
+  campusplacement: CampusPlacementTemplate,
+  minimalist: MinimalistTemplate,
+  modern: ModernTemplate,
+  professional: ProfessionalTemplate,
+  creative: CreativeTemplate,
+  compact: CompactTemplate,
+  executive: ExecutiveTemplate,
+  ats: ATSTemplate,
+  tech: TechTemplate,
+  devresume: DevResumeTemplate,
+  faang: FAANGTemplate,
+  svengineer: SVEngineerTemplate,
+  serviceengineer: ServiceEngineerTemplate,
+  eliteengineer: EliteEngineerTemplate,
+  atsexecutive: ATSExecutiveTemplate,
+  koushik: KoushikTemplate,
+};
 
-  const getTemplateStyles = () => {
-    switch (selectedTemplate) {
-      case 'modern':
-        return {
-          container: "bg-white min-h-full p-8 font-sans",
-          header: "border-b-2 border-stone-800 pb-5 mb-5",
-          name: "text-2xl font-semibold text-stone-900",
-          sectionTitle: "text-sm font-semibold text-stone-800 uppercase tracking-wide mb-3 flex items-center gap-2",
-          itemTitle: "font-semibold text-stone-800",
-          itemSubtitle: "text-stone-600"
-        };
-      case 'professional':
-        return {
-          container: "bg-white min-h-full p-8",
-          header: "text-center border-b border-stone-200 pb-5 mb-5",
-          name: "text-2xl font-semibold text-stone-800",
-          sectionTitle: "text-sm font-semibold text-stone-800 border-b border-stone-200 pb-1 mb-3",
-          itemTitle: "font-semibold text-stone-800",
-          itemSubtitle: "text-stone-600 italic"
-        };
-      case 'ats-friendly':
-        return {
-          container: "bg-white min-h-full p-8 font-sans text-sm",
-          header: "mb-5",
-          name: "text-xl font-semibold uppercase tracking-wide",
-          sectionTitle: "text-sm font-semibold uppercase border-b border-stone-900 mb-2",
-          itemTitle: "font-semibold",
-          itemSubtitle: "font-medium"
-        };
-      case 'simple':
-      default:
-        return {
-          container: "bg-white min-h-full p-8 font-sans",
-          header: "mb-5",
-          name: "text-2xl font-semibold text-stone-900",
-          sectionTitle: "text-base font-semibold text-stone-900 mb-3 border-l-2 border-stone-900 pl-2.5",
-          itemTitle: "font-semibold text-stone-800",
-          itemSubtitle: "text-stone-600"
-        };
-    }
+// ─────────────────────────────────────────────────────────────────────────────
+// Data-shape classification
+//
+// Group A templates destructure skills as an OBJECT: { technical: [], soft: [] }
+//   → modern, professional, minimalist, creative, compact, executive, ats, tech, atsexecutive
+//
+// Group B templates read skills as an ARRAY of { category, items }
+//   → campusplacement, svengineer, serviceengineer, eliteengineer, devresume, faang, koushik
+//
+// Within Group B, DevResume is the sole outlier: it expects `items` as an ARRAY
+// (cat.items?.join(', ')), while every other Group B template expects `items` as
+// a STRING (skill.items || skill.name).
+// ─────────────────────────────────────────────────────────────────────────────
+const GROUP_B_TEMPLATES = new Set([
+  'campusplacement', 'svengineer', 'serviceengineer', 'eliteengineer',
+  'devresume', 'faang', 'koushik',
+]);
+
+const ARRAY_ITEMS_TEMPLATES = new Set(['devresume']);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Data adapter: ResumeContext shape  →  Templates shape
+//
+// This is the reverse of TemplatesPage.mapGeneratedToContextData.
+// ResumeContext stores:
+//   personalInfo: { fullName, email, phone, location, linkedin, github, portfolio, summary }
+//   education:    [{ id, institution, degree, field, startDate, endDate, gpa, description }]
+//   experience:   [{ id, company, position, location, startDate, endDate, description }]
+//   skills:        [{ id, name, category, level }]          ← flat array
+//   projects:     [{ id, name, description, technologies[], link }]
+//
+// Templates expect (Group A):
+//   personalInfo: { name, title, email, phone, location, linkedin, website }
+//   summary:       '…'                                       ← top-level string
+//   education:    [{ school, degree, field, year }]
+//   experience:   [{ company, title, startDate, endDate, location, achievements[] }]
+//   skills:        { technical: [], soft: [] }               ← object with two arrays
+//   projects:     [{ name, description, tech[], link }]
+//
+// Templates expect (Group B):
+//   personalInfo: { fullName, email, phone, location, linkedin, github }
+//   education:    [{ institution, degree, field, endDate, gpa }]   ← already matches!
+//   experience:   [{ company, role, startDate, endDate, location, achievements[] }]
+//   skills:        [{ category, items }]                     ← items is STRING (or ARRAY for DevResume)
+//   projects:     [{ name, achievements[], techStack }]      ← techStack is STRING
+//
+// The adapter produces a superset object containing BOTH naming conventions so that
+// every template can read whichever fields it needs.
+// ─────────────────────────────────────────────────────────────────────────────
+const adaptContextToTemplateData = (resumeData, templateId) => {
+  const {
+    personalInfo: p = {},
+    education: edu = [],
+    experience: exp = [],
+    skills: ctxSkills = [],
+    projects: proj = [],
+  } = resumeData || {};
+
+  const isGroupB = GROUP_B_TEMPLATES.has(templateId);
+  const isGroupA = !isGroupB; // default — matches ModernTemplate fallback
+  const itemsAsArray = ARRAY_ITEMS_TEMPLATES.has(templateId);
+
+  // ── Personal Info ──
+  // Group A reads personalInfo.name; Group B reads personalInfo.fullName.
+  // Provide both so any template finds the name.
+  const personalInfo = {
+    name: p.fullName || '',
+    fullName: p.fullName || '',
+    title: p.title || '',
+    role: p.title || p.role || '',
+    email: p.email || '',
+    phone: p.phone || '',
+    location: p.location || '',
+    address: p.location || '',
+    linkedin: p.linkedin || '',
+    github: p.github || '',
+    website: p.portfolio || p.github || '',
+    portfolio: p.portfolio || '',
+    summary: p.summary || '',
   };
 
-  const styles = getTemplateStyles();
+  // ── Summary (top-level, used by Group A templates) ──
+  const summary = p.summary || '';
 
-  const SectionHeader = ({ title, icon }) => (
-    <div className={styles.sectionTitle}>
-      {selectedTemplate === 'modern' && icon}
-      {title}
-    </div>
-  );
+  // ── Education ──
+  // Group A reads edu.school / edu.year; Group B reads edu.institution / edu.endDate.
+  // Provide both field names.
+  const education = edu.map((e) => ({
+    id: e.id,
+    school: e.institution || '',
+    institution: e.institution || '',
+    degree: e.degree || '',
+    field: e.field || '',
+    year: e.endDate || '',
+    endDate: e.endDate || '',
+    startDate: e.startDate || '',
+    gpa: e.gpa || '',
+    description: e.description || '',
+  }));
 
-  return (
-    <div className={styles.container}>
-      {/* Header */}
-      <header className={styles.header}>
-        <h1 className={styles.name}>{personalInfo.fullName || 'Your Name'}</h1>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-stone-600">
-          {personalInfo.email && (
-            <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {personalInfo.email}</span>
-          )}
-          {personalInfo.phone && (
-            <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {personalInfo.phone}</span>
-          )}
-          {personalInfo.location && (
-            <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {personalInfo.location}</span>
-          )}
-          {personalInfo.linkedin && (
-            <span className="flex items-center gap-1"><Linkedin className="w-3.5 h-3.5" /> {personalInfo.linkedin}</span>
-          )}
-          {personalInfo.github && (
-            <span className="flex items-center gap-1"><Github className="w-3.5 h-3.5" /> {personalInfo.github}</span>
-          )}
-        </div>
-        {personalInfo.summary && (
-          <p className="mt-3 text-sm text-stone-600 leading-relaxed italic">
-            {personalInfo.summary}
-          </p>
-        )}
-      </header>
+  // ── Experience ──
+  // Group A reads exp.title; Group B reads exp.role.
+  // ResumeContext has exp.position and exp.description (multi-line string).
+  // Convert description → achievements[] by splitting on newlines (strict hierarchy:
+  // each line becomes its own bullet nested under the job sub-heading).
+  const experience = exp.map((x) => {
+    const achievements = x.description
+      ? String(x.description)
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean)
+      : [];
 
-      {/* Experience */}
-      {experience.length > 0 && (
-        <section className="mb-5">
-          <SectionHeader title="Experience" icon={<Briefcase className="w-4 h-4" />} />
-          <div className="space-y-4">
-            {experience.map((exp) => (
-              <div key={exp.id}>
-                <div className="flex justify-between items-baseline gap-2">
-                  <h3 className={styles.itemTitle}>{exp.position}</h3>
-                  <span className="text-xs font-medium text-stone-400 shrink-0">{exp.startDate} – {exp.endDate}</span>
-                </div>
-                <div className="flex justify-between items-baseline gap-2">
-                  <span className={styles.itemSubtitle}>{exp.company}</span>
-                  {exp.location && <span className="text-xs text-stone-400 shrink-0">{exp.location}</span>}
-                </div>
-                <p className="mt-1.5 text-xs text-stone-500 whitespace-pre-line">{exp.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+    return {
+      id: x.id,
+      company: x.company || '',
+      title: x.position || '',
+      role: x.position || '',
+      position: x.position || '',
+      location: x.location || '',
+      startDate: x.startDate || '',
+      endDate: x.endDate || '',
+      achievements,
+      description: x.description || '',
+    };
+  });
 
-      {/* Education */}
-      {education.length > 0 && (
-        <section className="mb-5">
-          <SectionHeader title="Education" icon={<GraduationCap className="w-4 h-4" />} />
-          <div className="space-y-4">
-            {education.map((edu) => (
-              <div key={edu.id}>
-                <div className="flex justify-between items-baseline gap-2">
-                  <h3 className={styles.itemTitle}>{edu.institution}</h3>
-                  <span className="text-xs font-medium text-stone-400 shrink-0">{edu.startDate} – {edu.endDate}</span>
-                </div>
-                <div className="flex justify-between items-baseline gap-2">
-                  <span className={styles.itemSubtitle}>{edu.degree} in {edu.field}</span>
-                  {edu.gpa && <span className="text-xs text-stone-400 shrink-0">GPA: {edu.gpa}</span>}
-                </div>
-                {edu.description && <p className="mt-1 text-xs text-stone-500">{edu.description}</p>}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+  // ── Skills ──
+  // ResumeContext: flat array of { id, name, category, level }
+  // Group A: object { technical: [], soft: [] }
+  // Group B: array of { category, items } — items is STRING (or ARRAY for DevResume)
+  let skills;
+  if (isGroupA) {
+    const technical = [];
+    const soft = [];
+    ctxSkills.forEach((s) => {
+      const cat = (s.category || '').toLowerCase();
+      if (cat === 'soft' || cat === 'soft skills') {
+        soft.push(s.name);
+      } else {
+        technical.push(s.name);
+      }
+    });
+    skills = { technical, soft };
+  } else {
+    // Group B — group skill names by category
+    const categoryMap = new Map();
+    ctxSkills.forEach((s) => {
+      const category = s.category || 'Skills';
+      if (!categoryMap.has(category)) categoryMap.set(category, []);
+      categoryMap.get(category).push(s.name);
+    });
+    skills = Array.from(categoryMap.entries()).map(([category, names]) => ({
+      category,
+      items: itemsAsArray ? names : names.join(', '),
+    }));
+  }
 
-      {/* Skills */}
-      {skills.length > 0 && (
-        <section className="mb-5">
-          <SectionHeader title="Skills" icon={<Code className="w-4 h-4" />} />
-          <div className="flex flex-wrap gap-1.5">
-            {skills.map((skill) => (
-              <span
-                key={skill.id}
-                className={`px-2 py-0.5 text-xs rounded font-medium ${
-                  selectedTemplate === 'modern'
-                    ? 'bg-stone-100 text-stone-700'
-                    : 'border border-stone-200 text-stone-600'
-                }`}
-              >
-                {skill.name}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
+  // ── Projects ──
+  // Group A reads project.tech (array); Group B reads project.techStack (string) +
+  // project.achievements[]; DevResume reads project.technologies (array).
+  // ResumeContext has project.technologies (array) and project.description (string).
+  // Convert description → achievements[] (each line a separate bullet under the
+  // project sub-heading — strict structural hierarchy).
+  const projects = proj.map((pr) => {
+    const projectAchievements = pr.description
+      ? String(pr.description)
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean)
+      : [];
 
-      {/* Projects */}
-      {projects.length > 0 && (
-        <section className="mb-5">
-          <SectionHeader title="Projects" icon={<Award className="w-4 h-4" />} />
-          <div className="space-y-4">
-            {projects.map((proj) => (
-              <div key={proj.id}>
-                <div className="flex justify-between items-baseline gap-2">
-                  <h3 className={styles.itemTitle}>{proj.name}</h3>
-                  {proj.link && (
-                    <a href={proj.link} target="_blank" rel="noopener noreferrer" className="text-xs text-accent-600 flex items-center gap-0.5 shrink-0 hover:underline">
-                      <LinkIcon className="w-3 h-3" /> Link
-                    </a>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-stone-500">{proj.description}</p>
-                {proj.technologies && proj.technologies.length > 0 && (
-                  <div className="mt-1.5 flex flex-wrap gap-1">
-                    {proj.technologies.map((tech, idx) => (
-                      <span key={idx} className="text-[10px] text-stone-400 bg-stone-50 px-1.5 py-0.5 rounded border border-stone-100">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+    return {
+      id: pr.id,
+      name: pr.name || '',
+      description: pr.description || '',
+      achievements: projectAchievements,
+      tech: pr.technologies || [],
+      technologies: pr.technologies || [],
+      techStack: Array.isArray(pr.technologies) ? pr.technologies.join(', ') : '',
+      link: pr.link || '',
+    };
+  });
 
-      {/* Empty State */}
-      {experience.length === 0 && education.length === 0 && skills.length === 0 && projects.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-stone-300">
-          <FileText className="w-12 h-12 mb-3 opacity-30" />
-          <p className="text-sm font-medium text-stone-400">No content yet</p>
-          <p className="text-xs text-stone-400 mt-1">Fill in the form to see your resume</p>
-        </div>
-      )}
-    </div>
-  );
+  return {
+    personalInfo,
+    summary,
+    education,
+    experience,
+    skills,
+    projects,
+  };
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ResumePreview — renders the SAME dedicated template component used by the
+// TemplatesPage full-page preview, guaranteeing the inline live preview is
+// visually identical to the final exported output.
+// ─────────────────────────────────────────────────────────────────────────────
+const ResumePreview = () => {
+  const { resumeData, selectedTemplate, hiddenSections } = useResume();
+
+  const templateId = (selectedTemplate || 'modern').toLowerCase();
+  const TemplateComponent = templateComponents[templateId] || ModernTemplate;
+  const adaptedData = adaptContextToTemplateData(resumeData, templateId);
+  const dataWithHidden = { ...adaptedData, hiddenSections: hiddenSections || [] };
+
+  return <TemplateComponent data={dataWithHidden} scale={1} isPreview />;
 };
 
 export default ResumePreview;

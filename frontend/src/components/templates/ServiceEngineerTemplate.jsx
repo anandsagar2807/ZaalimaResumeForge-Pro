@@ -165,7 +165,7 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
         color: '#000000',
         lineHeight: '1.15',
         marginBottom: '4px',
-        textAlign: 'left'
+        textAlign: 'center'
     };
 
     const contactRowStyle = {
@@ -175,7 +175,7 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
         marginBottom: '0px',
         letterSpacing: '0.2px',
         display: 'flex',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         alignItems: 'center',
         gap: '0px'
     };
@@ -401,10 +401,10 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
             </div>
 
             {/* ══════════ DIVIDER ══════════ */}
-            <div style={divider} />
+            {!(data?.hiddenSections || []).includes('education') && <div style={divider} />}
 
             {/* ══════════ EDUCATION ══════════ */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('education') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Education</div>
                 {educationData.map((edu, i) => (
                     <div key={i} style={{ marginBottom: '3px' }}>
@@ -417,13 +417,13 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         </div>
                     </div>
                 ))}
-            </div>
+            </div>}
 
             {/* ══════════ DIVIDER ══════════ */}
-            <div style={divider} />
+            {!(data?.hiddenSections || []).includes('skills') && <div style={divider} />}
 
             {/* ══════════ TECHNICAL SKILLS ══════════ */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('skills') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Technical Skills</div>
                 {skillsData.map((skill, i) => (
                     <div key={i} style={skillRowStyle}>
@@ -431,13 +431,13 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         <span style={skillValueStyle}>{skill.items || skill.name}</span>
                     </div>
                 ))}
-            </div>
+            </div>}
 
             {/* ══════════ DIVIDER ══════════ */}
-            <div style={divider} />
+            {!(data?.hiddenSections || []).includes('internships') && <div style={divider} />}
 
             {/* ══════════ INTERNSHIPS ══════════ */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('internships') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Internships</div>
                 {internshipData.map((exp, i) => (
                     <div key={i} style={{ marginBottom: '5px' }}>
@@ -456,13 +456,13 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         ))}
                     </div>
                 ))}
-            </div>
+            </div>}
 
             {/* ══════════ DIVIDER ══════════ */}
-            <div style={divider} />
+            {!(data?.hiddenSections || []).includes('projects') && <div style={divider} />}
 
             {/* ══════════ PROJECTS ══════════ */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('projects') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Projects</div>
                 {projectsData.map((proj, i) => (
                     <div key={i} style={{ marginBottom: '5px' }}>
@@ -480,13 +480,13 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         )}
                     </div>
                 ))}
-            </div>
+            </div>}
 
             {/* ══════════ DIVIDER ══════════ */}
-            <div style={divider} />
+            {!(data?.hiddenSections || []).includes('certifications') && <div style={divider} />}
 
             {/* ══════════ CERTIFICATIONS ══════════ */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('certifications') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Certifications</div>
                 {certificationsData.map((cert, i) => (
                     <div key={i} style={certItemStyle}>
@@ -494,13 +494,13 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         {cert.date && <span style={certDateStyle}> — {cert.date}</span>}
                     </div>
                 ))}
-            </div>
+            </div>}
 
             {/* ══════════ DIVIDER ══════════ */}
-            <div style={divider} />
+            {!(data?.hiddenSections || []).includes('codingProfiles') && <div style={divider} />}
 
             {/* ══════════ CODING PROFILES ══════════ */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('codingProfiles') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Coding Profiles</div>
                 {codingProfilesData.map((profile, i) => (
                     <div key={i} style={codingProfileStyle}>
@@ -508,13 +508,13 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         <span>{profile.detail}</span>
                     </div>
                 ))}
-            </div>
+            </div>}
 
             {/* ══════════ DIVIDER ══════════ */}
-            <div style={divider} />
+            {!(data?.hiddenSections || []).includes('achievements') && <div style={divider} />}
 
             {/* ══════════ ACHIEVEMENTS ══════════ */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('achievements') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Achievements</div>
                 {achievementsData.map((ach, i) => (
                     <div key={i} style={achievementItemStyle}>
@@ -522,13 +522,13 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         {ach}
                     </div>
                 ))}
-            </div>
+            </div>}
 
             {/* ══════════ DIVIDER ══════════ */}
-            <div style={divider} />
+            {!(data?.hiddenSections || []).includes('extraCurricular') && <div style={divider} />}
 
             {/* ══════════ EXTRA-CURRICULAR ══════════ */}
-            <div style={sectionWrapStyle}>
+            {!(data?.hiddenSections || []).includes('extraCurricular') && <div style={sectionWrapStyle}>
                 <div style={sectionTitleStyle}>Extra-Curricular</div>
                 {extraCurricularData.map((item, i) => (
                     <div key={i} style={extraItemStyle}>
@@ -536,7 +536,7 @@ const ServiceEngineerTemplate = ({ data, scale = 1, isPreview = false }) => {
                         {item}
                     </div>
                 ))}
-            </div>
+            </div>}
         </div>
     );
 };

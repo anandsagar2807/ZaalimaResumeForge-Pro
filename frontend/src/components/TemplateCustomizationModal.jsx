@@ -5,9 +5,7 @@ const TemplateCustomizationModal = ({ isOpen, onClose, onGenerate, templateName 
   const [formData, setFormData] = useState({
     jobTitle: '',
     industry: '',
-    experience: '5-8 years',
-    skills: '',
-    customRequirements: ''
+    experience: '5-8 years'
   });
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -116,36 +114,6 @@ const TemplateCustomizationModal = ({ isOpen, onClose, onGenerate, templateName 
               <option value="8-12 years">Lead Level (8-12 years)</option>
               <option value="12+ years">Executive Level (12+ years)</option>
             </select>
-          </div>
-
-          {/* Key Skills */}
-          <div>
-            <label className="text-sm font-semibold text-slate-700 mb-2 block">
-              Key Skills (Optional)
-            </label>
-            <textarea
-              name="skills"
-              value={formData.skills}
-              onChange={handleChange}
-              placeholder="e.g., React, Python, Project Management, Leadership"
-              rows="2"
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#7d5f3f] focus:border-transparent resize-none"
-            />
-          </div>
-
-          {/* Custom Requirements */}
-          <div>
-            <label className="text-sm font-semibold text-slate-700 mb-2 block">
-              Additional Requirements (Optional)
-            </label>
-            <textarea
-              name="customRequirements"
-              value={formData.customRequirements}
-              onChange={handleChange}
-              placeholder="Any specific requirements or preferences for your resume..."
-              rows="3"
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#7d5f3f] focus:border-transparent resize-none"
-            />
           </div>
 
           {/* Actions */}

@@ -1,4 +1,13 @@
 const mongoose = require("mongoose");
+const dns = require("dns");
+
+// Fix for Node.js c-ares DNS resolver failing on Windows.
+// The mongodb+srv:// connection string relies on dns.resolveSrv() and
+// dns.resolveTxt(), which use the c-ares library. On some Windows setups
+// c-ares cannot reach the configured DNS server and fails with
+// ECONNREFUSED even though the system resolver (nslookup) works.
+// Explicitly pointing c-ares at Google's public DNS servers resolves this.
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const connectDB = async () => {
   const options = {

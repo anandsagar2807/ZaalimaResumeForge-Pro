@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+// Normalize the base URL so it always ends with /api, regardless of whether
+// VITE_API_URL includes the /api suffix (e.g. "http://localhost:5001/api")
+// or just the origin (e.g. "http://localhost:5001"). The Express server
+// mounts all routes under /api/*, so calls like `${API_URL}/ai/advanced/...`
+// must resolve to http://localhost:5001/api/ai/advanced/...
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_URL = rawApiUrl.replace(/\/$/, '').endsWith('/api')
+  ? rawApiUrl.replace(/\/$/, '')
+  : `${rawApiUrl.replace(/\/$/, '')}/api`;
 
 // Brutal Honest Review
 export const getBrutalHonestReview = async (resumeText) => {
@@ -47,14 +55,17 @@ export const getFinalPolishReview = async (resumeText) => {
 };
 
 // Parse PDF/DOCX Resume
+// NOTE: Do NOT set Content-Type manually — axios auto-generates the
+// multipart boundary when given a FormData body. Setting it manually
+// strips the boundary and corrupts the upload.
 export const parseResumeFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
   const response = await axios.post(`${API_URL}/resume/parse`, formData, {
     headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+      // Let the browser set the correct multipart Content-Type w/ boundary
+    },
   });
   return response.data;
 };

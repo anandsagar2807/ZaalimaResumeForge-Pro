@@ -257,7 +257,7 @@ const CreativeTemplate = ({ data, scale = 1, isPreview = false }) => {
   }
 
   return (
-    <div style={containerStyle} className="creative-template">
+    <div style={isPreview ? { ...containerStyle, maxHeight: 'none', overflow: 'visible' } : containerStyle} className="creative-template">
       {/* Banner */}
       <div style={bannerStyle}>
         <h1 style={nameStyle}>{personalInfo?.name || 'Your Name'}</h1>
@@ -273,20 +273,20 @@ const CreativeTemplate = ({ data, scale = 1, isPreview = false }) => {
       {/* Main Content */}
       <div style={mainStyle}>
         <div style={leftColumnStyle}>
-          {leftSections.map((section, index) => (
+          {leftSections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
             <React.Fragment key={section.key}>
               {section.content}
-              {index < leftSections.length - 1 && <div style={dividerStyle} />}
+              {index < arr.length - 1 && <div style={dividerStyle} />}
             </React.Fragment>
           ))}
         </div>
 
         {/* Right Column */}
         <div style={rightColumnStyle}>
-          {rightSections.map((section, index) => (
+          {rightSections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
             <React.Fragment key={section.key}>
               {section.content}
-              {index < rightSections.length - 1 && <div style={dividerStyle} />}
+              {index < arr.length - 1 && <div style={dividerStyle} />}
             </React.Fragment>
           ))}
         </div>

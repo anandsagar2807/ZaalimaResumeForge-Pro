@@ -45,16 +45,17 @@ export const AuthProvider = ({ children }) => {
     return user?.role === 'admin';
   };
 
+  // All Pro features are unlocked for every user.
   const isPro = () => {
-    return user?.subscription?.plan === 'pro' && user?.subscription?.status === 'active';
+    return true;
   };
 
   const isFree = () => {
-    return !isPro() && !isAdmin();
+    return false;
   };
 
   const hasPremiumTemplates = () => {
-    return isAdmin() || isPro() || user?.subscription?.features?.premiumTemplates === true;
+    return true;
   };
 
   return (

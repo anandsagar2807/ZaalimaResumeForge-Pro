@@ -64,6 +64,7 @@ export const ResumeContext = createContext();
 export const ResumeProvider = ({ children }) => {
     const [resumeData, setResumeData] = useState(initialResumeData);
     const [selectedTemplate, setSelectedTemplate] = useState('modern');
+    const [hiddenSections, setHiddenSections] = useState([]);
 
     // Generic update function for top-level fields
     const updateResumeData = (updates) => {
@@ -227,11 +228,14 @@ export const ResumeProvider = ({ children }) => {
     const resetResumeData = () => {
         setResumeData(initialResumeData);
         setSelectedTemplate('modern');
+        setHiddenSections([]);
     };
 
     const value = {
         resumeData,
         selectedTemplate,
+        hiddenSections,
+        setHiddenSections,
         updateResumeData,
         updatePersonalInfo,
         addEducation,

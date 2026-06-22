@@ -171,7 +171,7 @@ const ATSTemplate = ({ data, scale = 1, isPreview = false }) => {
   }
 
   return (
-    <div style={containerStyle} className="ats-template">
+    <div style={isPreview ? { ...containerStyle, maxHeight: 'none', overflow: 'visible' } : containerStyle} className="ats-template">
       {/* Header */}
       <div>
         <p style={headerStyle}>{personalInfo?.name || 'YOUR NAME'}</p>
@@ -184,11 +184,10 @@ const ATSTemplate = ({ data, scale = 1, isPreview = false }) => {
         </p>
       </div>
 
-      {/* Sections with dividers */}
-      {sections.map((section, index) => (
+      {sections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
         <React.Fragment key={section.key}>
           {section.content}
-          {index < sections.length - 1 && <div style={dividerStyle} />}
+          {index < arr.length - 1 && <div style={dividerStyle} />}
         </React.Fragment>
       ))}
     </div>

@@ -16,11 +16,21 @@ const ATSScoreChecker = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/ats-score', {
+      // Use the env-configured API base. Normalize so it always ends with /api
+      // (the Express server mounts routes under /api/*), regardless of whether
+      // VITE_API_URL includes the /api suffix or just the origin.
+      const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+      const API_URL = rawApiUrl.replace(/\/$/, '').endsWith('/api')
+        ? rawApiUrl.replace(/\/$/, '')
+        : `${rawApiUrl.replace(/\/$/, '')}/api`;
+      const response = await fetch(`${API_URL}/ai/ats-score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resumeText, jdText }),
       });
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
       const data = await response.json();
       setResult(data);
     } catch (error) {
@@ -114,9 +124,8 @@ const ATSScoreChecker = () => {
             </div>
             <div className="w-full bg-stone-200 rounded-full h-3 overflow-hidden">
               <div
-                className={`h-full transition-all duration-1000 ${
-                  result.score >= 80 ? 'bg-green-500' : result.score >= 60 ? 'bg-amber-500' : 'bg-red-500'
-                }`}
+                className={`h-full transition-all duration-1000 ${result.score >= 80 ? 'bg-green-500' : result.score >= 60 ? 'bg-amber-500' : 'bg-red-500'
+                  }`}
                 style={{ width: `${result.score}%` }}
               />
             </div>

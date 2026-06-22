@@ -18,7 +18,8 @@ import TemplateCustomizationModal from '../components/TemplateCustomizationModal
 import {
   CampusPlacementTemplate, MinimalistTemplate, ModernTemplate, ProfessionalTemplate, CreativeTemplate,
   CompactTemplate, ExecutiveTemplate, ATSTemplate, TechTemplate, DevResumeTemplate,
-  FAANGTemplate, SVEngineerTemplate, ServiceEngineerTemplate, EliteEngineerTemplate
+  FAANGTemplate, SVEngineerTemplate, ServiceEngineerTemplate, EliteEngineerTemplate,
+  ATSExecutiveTemplate, KoushikTemplate
 } from '../components/templates';
 
 const templateComponents = {
@@ -35,12 +36,14 @@ const templateComponents = {
   faang: FAANGTemplate,
   svengineer: SVEngineerTemplate,
   serviceengineer: ServiceEngineerTemplate,
-  eliteengineer: EliteEngineerTemplate
+  eliteengineer: EliteEngineerTemplate,
+  atsexecutive: ATSExecutiveTemplate,
+  koushik: KoushikTemplate
 };
 
 const TemplatesPage = () => {
   const navigate = useNavigate();
-  const { setTemplate, updateResumeData } = useResume();
+  const { setTemplate, updateResumeData, setHiddenSections } = useResume();
   const { user, isPro, isAdmin, hasPremiumTemplates, isAuthenticated } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -151,7 +154,6 @@ const TemplatesPage = () => {
   };
 
   const handleTemplateSelect = async (templateId, userInput = {}) => {
-    // Check if template is premium
     const templateStyle = templateStyles[templateId];
     if (templateStyle?.premium && !hasPremiumTemplates()) {
       navigate('/pricing');
@@ -161,6 +163,7 @@ const TemplatesPage = () => {
     try {
       setIsRouting(true);
       setTemplate(templateId);
+      setHiddenSections(templateStyle?.removedSections || []);
 
       const generated = await groqTemplatesService.generateTemplateContent(templateId, userInput);
       const mappedData = mapGeneratedToContextData(generated, templateId);
@@ -418,8 +421,8 @@ const TemplateCard = ({ template, resumeData, onPreview, onSelect, isSelected, o
       {/* Template Preview Thumbnail */}
       <div className="aspect-[3/4] bg-white relative overflow-hidden">
         {TemplateComponent && resumeData && (
-          <div className={`absolute inset-0 origin-top-left scale-[0.25] ${isLocked ? 'blur-[2px]' : ''}`}>
-            <TemplateComponent data={resumeData} scale={1} isPreview />
+          <div className={`absolute inset-0 origin-top-left scale-[0.45] md:scale-[0.48] lg:scale-[0.44] xl:scale-[0.36] ${isLocked ? 'blur-[2px]' : ''}`}>
+            <TemplateComponent data={{ ...resumeData, hiddenSections: template?.removedSections || [] }} scale={1} isPreview />
           </div>
         )}
 
@@ -527,6 +530,7 @@ const TemplateCard = ({ template, resumeData, onPreview, onSelect, isSelected, o
 // Preview Modal Component
 const PreviewModal = ({ templateId, resumeData, onClose, onUse }) => {
   const [currentTemplate, setCurrentTemplate] = useState(templateId);
+  const [showUseButton, setShowUseButton] = useState(true);
   const TemplateComponent = templateComponents[currentTemplate];
   const allTemplateIds = Object.keys(templateComponents);
   const currentIndex = allTemplateIds.indexOf(currentTemplate);
@@ -591,7 +595,7 @@ const PreviewModal = ({ templateId, resumeData, onClose, onUse }) => {
         className="bg-white rounded-2xl overflow-hidden w-full max-w-4xl max-h-[90vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b">
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-slate-900">{template?.name}</h2>
             <p className="text-sm text-slate-600">{template?.description}</p>
@@ -609,16 +613,16 @@ const PreviewModal = ({ templateId, resumeData, onClose, onUse }) => {
         </div>
 
         {/* Preview */}
-        <div className="flex-1 overflow-auto bg-slate-100 p-8">
-          <div className="scale-[0.7] sm:scale-75 md:scale-65 lg:scale-55 xl:scale-45 origin-top">
+        <div className="flex-1 min-h-0 overflow-auto bg-slate-100 p-8 flex justify-center">
+          <div className="scale-[0.7] sm:scale-[0.75] md:scale-[0.65] lg:scale-[0.55] xl:scale-[0.45] origin-top">
             {TemplateComponent && resumeData && (
-              <TemplateComponent data={resumeData} scale={1} isPreview />
+              <TemplateComponent data={{ ...resumeData, hiddenSections: template?.removedSections || [] }} scale={1} isPreview />
             )}
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-t">
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-t flex-shrink-0">
           <div className="flex gap-2">
             {template?.sections?.map((section, idx) => (
               <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
@@ -626,13 +630,15 @@ const PreviewModal = ({ templateId, resumeData, onClose, onUse }) => {
               </span>
             ))}
           </div>
-          <button
-            onClick={() => onUse(currentTemplate)}
-            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-2.5 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all"
-          >
-            <Sparkles className="h-5 w-5" />
-            Use This Template
-          </button>
+          {showUseButton && (
+            <button
+              onClick={() => onUse(currentTemplate)}
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-2.5 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all"
+            >
+              <Sparkles className="h-5 w-5" />
+              Use This Template
+            </button>
+          )}
         </div>
       </motion.div>
     </motion.div>

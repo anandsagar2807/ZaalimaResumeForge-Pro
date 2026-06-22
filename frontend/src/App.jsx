@@ -6,6 +6,8 @@ import { ResumeProvider } from './context/ResumeContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AIToolsProvider } from './context/AIToolsContext';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import { ToastContainer } from './components/ui/ToastContainer';
 import FloatingAIAssistant from './components/FloatingAIAssistant';
 
 // Lazy-loaded pages for instant routing and smaller initial bundle
@@ -114,20 +116,23 @@ const AnimatedRoutes = () => {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ResumeProvider>
-          <AIToolsProvider>
-            <Router>
-              <ClerkProviderWithNavigate>
-                <AnimatedRoutes />
-                <FloatingAIAssistant />
-              </ClerkProviderWithNavigate>
-            </Router>
-          </AIToolsProvider>
-        </ResumeProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ToastProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ResumeProvider>
+            <AIToolsProvider>
+              <Router>
+                <ClerkProviderWithNavigate>
+                  <AnimatedRoutes />
+                  <FloatingAIAssistant />
+                  <ToastContainer />
+                </ClerkProviderWithNavigate>
+              </Router>
+            </AIToolsProvider>
+          </ResumeProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ToastProvider>
   );
 }
 

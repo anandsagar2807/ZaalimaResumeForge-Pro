@@ -190,7 +190,7 @@ const MinimalistTemplate = ({ data, scale = 1, isPreview = false }) => {
   }
 
   return (
-    <div style={containerStyle} className="minimalist-template">
+    <div style={isPreview ? { ...containerStyle, maxHeight: 'none', overflow: 'visible' } : containerStyle} className="minimalist-template">
       {/* Header */}
       <div style={headerStyle}>
         <h1 style={titleStyle}>{personalInfo?.name || 'Your Name'}</h1>
@@ -203,11 +203,10 @@ const MinimalistTemplate = ({ data, scale = 1, isPreview = false }) => {
         </div>
       </div>
 
-      {/* Sections with dividers */}
-      {sections.map((section, index) => (
+      {sections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
         <React.Fragment key={section.key}>
           {section.content}
-          {index < sections.length - 1 && <div style={dividerStyle} />}
+          {index < arr.length - 1 && <div style={dividerStyle} />}
         </React.Fragment>
       ))}
     </div>

@@ -8,15 +8,18 @@ import {
     Upload, FileText, Briefcase, GraduationCap, Code,
     Award, Download, Eye, Save, Sparkles, ChevronLeft,
     Plus, Trash2, MapPin, Mail, Phone, Link as LinkIcon,
-    Linkedin, Github, ExternalLink, Trash, Loader,
-    Crown, Lock, AlertCircle
+    Linkedin, Github, ExternalLink, Trash,
+    Crown, Lock, AlertCircle, Edit3, Maximize2, Minimize2
 } from 'lucide-react';
 import ResumePreview from '../components/ResumePreview';
+import { aiService } from '../services/aiService';
+import { useToast } from '../context/ToastContext';
 
 const ResumeBuilderPage = () => {
     const { templateId } = useParams();
     const navigate = useNavigate();
     const { user, isPro, isFree, isAuthenticated } = useAuth();
+    const toast = useToast();
     const {
         resumeData,
         selectedTemplate,
@@ -40,8 +43,15 @@ const ResumeBuilderPage = () => {
     const [activeSection, setActiveSection] = useState('personal');
     const [jdText, setJdText] = useState(resumeData.jobDescription || '');
     const [showDownloadModal, setShowDownloadModal] = useState(false);
-    const [aiAnalysis, setAiAnalysis] = useState(null);
-    const [analyzingStrength, setAnalyzingStrength] = useState(false);
+    // AI Match Assistant state
+    const [jdAnalysis, setJdAnalysis] = useState(null);
+    const [atsResult, setAtsResult] = useState(null);
+    const [analyzingJD, setAnalyzingJD] = useState(false);
+    const [optimizing, setOptimizing] = useState(false);
+    const [aiError, setAiError] = useState('');
+    // When true, the left editor panel is hidden and the live preview expands to
+    // fill the entire viewport — dedicating the full screen to the preview.
+    const [previewOnlyMode, setPreviewOnlyMode] = useState(false);
 
     useEffect(() => {
         if (templateId && templateId !== selectedTemplate) {
@@ -58,44 +68,6 @@ const ResumeBuilderPage = () => {
         }
     }, [setJobDescription]);
 
-    // Dynamic AI Resume Strength Analysis
-    useEffect(() => {
-        const analyzeStrength = async () => {
-            setAnalyzingStrength(true);
-            try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-                const response = await fetch(`${apiUrl}/ai/advanced/analyze-strength`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        resumeData,
-                        jobDescription: jdText
-                    }),
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setAiAnalysis(data);
-                }
-            } catch (error) {
-                console.error('Failed to analyze resume strength:', error);
-            } finally {
-                setAnalyzingStrength(false);
-            }
-        };
-
-        // Debounce the analysis - only run after 2 seconds of no changes
-        const timeoutId = setTimeout(() => {
-            if (resumeData.personalInfo.fullName || resumeData.experience.length > 0) {
-                analyzeStrength();
-            }
-        }, 2000);
-
-        return () => clearTimeout(timeoutId);
-    }, [resumeData, jdText]);
-
     // Form sections config
     const sections = [
         { id: 'personal', label: 'Personal Info', icon: <FileText className="w-5 h-5" /> },
@@ -105,24 +77,95 @@ const ResumeBuilderPage = () => {
         { id: 'projects', label: 'Projects', icon: <Award className="w-5 h-5" /> },
     ];
 
-    // AI Actions
-    const handleAnalyzeJD = () => {
-        if (!jdText.trim()) return;
-        alert('AI is analyzing the Job Description to identify key skills and requirements...');
-        setJobDescription(jdText);
+    // Build a plain-text corpus of the current resume for AI analysis
+    const getResumeCorpus = () => {
+        const p = resumeData.personalInfo || {};
+        const parts = [
+            p.fullName || '',
+            p.title || '',
+            p.summary || '',
+            'EXPERIENCE',
+            ...(resumeData.experience || []).map((exp) =>
+                `${exp.position || ''} | ${exp.company || ''} | ${exp.startDate || ''} - ${exp.endDate || ''}\n${exp.description || ''}`
+            ),
+            'EDUCATION',
+            ...(resumeData.education || []).map((edu) =>
+                `${edu.degree || ''} ${edu.field ? `in ${edu.field}` : ''} | ${edu.institution || ''} | ${edu.startDate || ''} - ${edu.endDate || ''}`
+            ),
+            'SKILLS',
+            (resumeData.skills || []).map((s) => s.name).join(', '),
+            'PROJECTS',
+            ...(resumeData.projects || []).map((pr) =>
+                `${pr.name || ''}\n${pr.description || ''}\n${(pr.technologies || []).join(', ')}`
+            ),
+        ];
+        return parts.filter(Boolean).join('\n');
     };
 
-    const handleOptimizeResume = () => {
-        if (!jdText.trim()) return;
-        alert('AI is optimizing your resume content based on the Job Description...');
-        // Mock optimization: Add a suggested skill if it's not there
-        const keywords = ['Cloud Architecture', 'CI/CD', 'Microservices', 'GraphQL'];
-        const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
+    // AI Actions — wired to the real backend AI service
+    const handleAnalyzeJD = async () => {
+        if (!jdText.trim()) {
+            toast.error('Please paste a job description first.');
+            return;
+        }
+        setAnalyzingJD(true);
+        setAiError('');
+        setJdAnalysis(null);
+        setJobDescription(jdText);
+        try {
+            const result = await aiService.analyzeJD(jdText);
+            setJdAnalysis(result);
+            toast.success('Job description analyzed successfully!');
+        } catch (err) {
+            const msg = err?.response?.data?.error || err?.message || 'Failed to analyze job description.';
+            setAiError(msg);
+            toast.error(msg);
+        } finally {
+            setAnalyzingJD(false);
+        }
+    };
 
-        if (!resumeData.skills.some(s => s.name === randomKeyword)) {
-            setTimeout(() => {
-                addSkill({ name: randomKeyword, category: 'AI Suggested' });
-            }, 1000);
+    const handleOptimizeResume = async () => {
+        if (!jdText.trim()) {
+            toast.error('Please paste a job description first.');
+            return;
+        }
+        setOptimizing(true);
+        setAiError('');
+        setAtsResult(null);
+        setJobDescription(jdText);
+        try {
+            const resumeText = getResumeCorpus();
+            const result = await aiService.getATSScore(resumeText, jdText);
+            setAtsResult(result);
+            // Auto-add missing skills that the AI flagged, so the resume
+            // immediately reflects the optimization.
+            const missing = result?.missingKeywords || [];
+            if (Array.isArray(missing) && missing.length > 0) {
+                const existing = new Set((resumeData.skills || []).map((s) => s.name.toLowerCase()));
+                let added = 0;
+                missing.forEach((kw) => {
+                    const name = String(kw).trim();
+                    if (name && !existing.has(name.toLowerCase())) {
+                        addSkill({ name, category: 'AI Suggested' });
+                        existing.add(name.toLowerCase());
+                        added += 1;
+                    }
+                });
+                if (added > 0) {
+                    toast.success(`Optimization complete! Added ${added} suggested skill${added > 1 ? 's' : ''} from the JD.`);
+                } else {
+                    toast.success('Optimization complete! Your resume already covers the key keywords.');
+                }
+            } else {
+                toast.success('Optimization complete! No missing keywords detected.');
+            }
+        } catch (err) {
+            const msg = err?.response?.data?.error || err?.message || 'Failed to optimize resume.';
+            setAiError(msg);
+            toast.error(msg);
+        } finally {
+            setOptimizing(false);
         }
     };
 
@@ -132,43 +175,6 @@ const ResumeBuilderPage = () => {
             setUploadedResume(file);
             alert(`File "${file.name}" uploaded. Extracting data...`);
         }
-    };
-
-    const extractKeywords = (text) => {
-        if (!text) return [];
-        const stopWords = new Set(['and', 'the', 'for', 'with', 'from', 'your', 'that', 'this', 'will', 'are', 'you', 'our', 'into']);
-        return Array.from(new Set(
-            text
-                .toLowerCase()
-                .replace(/[^a-z0-9\s+#/.()-]/g, ' ')
-                .split(/\s+/)
-                .filter((word) => word.length > 2 && !stopWords.has(word))
-        ));
-    };
-
-    const getResumeCorpus = () => {
-        const chunks = [
-            resumeData.personalInfo.fullName,
-            resumeData.personalInfo.summary,
-            ...resumeData.skills.map((skill) => skill.name),
-            ...resumeData.experience.map((exp) => `${exp.position} ${exp.company} ${exp.description}`),
-            ...resumeData.projects.map((project) => `${project.name} ${project.description} ${(project.technologies || []).join(' ')}`),
-        ];
-        return chunks.join(' ').toLowerCase();
-    };
-
-    const getKeywordCoverage = () => {
-        const jdKeywords = extractKeywords(jdText).slice(0, 30);
-        if (jdKeywords.length === 0) {
-            return { coverage: 0, missing: [], found: [] };
-        }
-
-        const corpus = getResumeCorpus();
-        const found = jdKeywords.filter((keyword) => corpus.includes(keyword));
-        const missing = jdKeywords.filter((keyword) => !corpus.includes(keyword));
-        const coverage = Math.round((found.length / jdKeywords.length) * 100);
-
-        return { coverage, missing, found };
     };
 
     const getExportFileName = (extension) => {
@@ -364,46 +370,6 @@ const ResumeBuilderPage = () => {
         setShowDownloadModal(false);
     };
 
-    // ✨ PREMIUM FEATURE: AI Resume Score Calculator
-    const calculateResumeScore = () => {
-        let score = 0;
-        const maxScore = 100;
-        const keywordCoverage = getKeywordCoverage();
-
-        // Personal Info checks
-        if (resumeData.personalInfo.fullName) score += 10;
-        if (resumeData.personalInfo.email) score += 5;
-        if (resumeData.personalInfo.phone) score += 5;
-        if (resumeData.personalInfo.summary && resumeData.personalInfo.summary.length > 100) score += 15;
-
-        // Experience checks
-        score += Math.min(resumeData.experience.length * 12, 30);
-        resumeData.experience.forEach(exp => {
-            if (exp.description && exp.description.length > 50) score += 3;
-        });
-
-        // Education checks
-        score += Math.min(resumeData.education.length * 8, 16);
-
-        // Skills checks
-        score += Math.min(resumeData.skills.length * 2, 15);
-
-        // Projects checks
-        score += Math.min(resumeData.projects.length * 5, 10);
-
-        // Strict keyword matching against JD
-        if (jdText.trim()) {
-            score += Math.round(keywordCoverage.coverage * 0.18);
-            score -= Math.min(keywordCoverage.missing.length * 1.4, 24);
-        }
-
-        // Strict penalties for weak content quality
-        const weakBullets = resumeData.experience.filter((exp) => (exp.description || '').length < 45).length;
-        score -= Math.min(weakBullets * 3, 12);
-
-        return Math.max(20, Math.min(score, maxScore));
-    };
-
     // ✨ PREMIUM FEATURE: Optimize Bullet Points
     const optimizeBulletPoint = (text) => {
         const actionVerbs = ['Developed', 'Implemented', 'Designed', 'Led', 'Optimized', 'Built', 'Created', 'Managed', 'Improved', 'Engineered'];
@@ -434,51 +400,6 @@ const ResumeBuilderPage = () => {
 
         return () => clearInterval(autoSaveInterval);
     }, [resumeData]);
-
-    // ✨ WOW FEATURE: Real-Time Resume Strength Indicator
-    const getResumeStrength = () => {
-        if (aiAnalysis) {
-            const score = aiAnalysis.overallScore;
-            if (score >= 85) return { level: 'Excellent', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' };
-            if (score >= 70) return { level: 'Good', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' };
-            if (score >= 50) return { level: 'Fair', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' };
-            return { level: 'Needs Work', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
-        }
-
-        // Fallback to local calculation
-        const score = calculateResumeScore();
-        if (score >= 85) return { level: 'Excellent', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' };
-        if (score >= 70) return { level: 'Good', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' };
-        if (score >= 50) return { level: 'Fair', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' };
-        return { level: 'Needs Work', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
-    };
-
-    // ✨ WOW FEATURE: Smart Suggestion Engine
-    const getSuggestions = () => {
-        if (aiAnalysis && aiAnalysis.suggestions) {
-            return aiAnalysis.suggestions.slice(0, 3);
-        }
-
-        // Fallback to local suggestions
-        const suggestions = [];
-        if (!resumeData.personalInfo.summary || resumeData.personalInfo.summary.length < 100) {
-            suggestions.push({ icon: '📝', text: 'Add a professional summary to stand out', action: 'Add Summary' });
-        }
-        if (resumeData.experience.length === 0) {
-            suggestions.push({ icon: '💼', text: 'Add work experience to show your background', action: 'Add Experience' });
-        }
-        if (resumeData.skills.length < 5) {
-            suggestions.push({ icon: '⚡', text: 'Add more skills to pass ATS filters', action: 'Add Skills' });
-        }
-        if (resumeData.projects.length === 0) {
-            suggestions.push({ icon: '🚀', text: 'Include projects to demonstrate your work', action: 'Add Projects' });
-        }
-        return suggestions;
-    };
-
-    const getDisplayScore = () => {
-        return aiAnalysis ? aiAnalysis.overallScore : calculateResumeScore();
-    };
 
     // Render active section form
     const renderForm = () => {
@@ -840,7 +761,7 @@ const ResumeBuilderPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex flex-col overflow-hidden font-sans">
+        <div className="app-shell-fullheight bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex flex-col overflow-hidden font-sans">
             {/* Top Bar */}
             <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 h-16 flex items-center justify-between px-6 shrink-0 relative z-20 shadow-sm">
                 <div className="flex items-center gap-6">
@@ -865,6 +786,27 @@ const ResumeBuilderPage = () => {
                         <Save className="w-4 h-4" />
                         <span>Draft Saved</span>
                     </button>
+                    {/* Use Template — toggles between editor+preview and full-screen preview */}
+                    <button
+                        onClick={() => setPreviewOnlyMode((v) => !v)}
+                        className={`flex items-center gap-2 font-bold py-2 px-4 rounded-xl text-sm transition-all ${previewOnlyMode
+                            ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                            : 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:shadow-lg'
+                            }`}
+                        title={previewOnlyMode ? 'Back to editor' : 'Use this template — full-screen preview'}
+                    >
+                        {previewOnlyMode ? (
+                            <>
+                                <Edit3 className="w-4 h-4" />
+                                <span className="hidden sm:inline">Edit</span>
+                            </>
+                        ) : (
+                            <>
+                                <Maximize2 className="w-4 h-4" />
+                                <span className="hidden sm:inline">Use Template</span>
+                            </>
+                        )}
+                    </button>
                     <button onClick={() => setShowDownloadModal(true)} className="bg-gradient-to-r from-blue-700 to-blue-900 text-white font-bold py-2 px-6 rounded-xl text-sm flex items-center gap-2 hover:shadow-lg transition-all">
                         <Download className="w-4 h-4" />
                         <span>Download</span>
@@ -872,162 +814,219 @@ const ResumeBuilderPage = () => {
                 </div>
             </div>
 
-            <div className="flex flex-1 overflow-hidden">
+            {/* Main content row — fills remaining viewport height below the top bar.
+                `min-h-0` lets the inner panes scroll instead of overflowing the viewport. */}
+            <div className="flex flex-1 min-h-0 overflow-hidden">
                 {/* Main Content Area */}
-                <div className="flex-1 flex overflow-hidden">
-                    {/* Editor Pane - 55% */}
-                    <div className="w-full lg:w-[55%] overflow-y-auto bg-white/50 px-6 py-10 md:px-12">
-                        <div className="max-w-4xl mx-auto space-y-8">
-                            {/* ✨ Resume Strength Indicator */}
-                            <div className={`rounded-2xl p-6 border-2 ${getResumeStrength().border} ${getResumeStrength().bg} shadow-sm`}>
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                                            {analyzingStrength ? (
-                                                <Loader className="w-5 h-5 text-blue-700 animate-spin" />
-                                            ) : (
-                                                <Sparkles className="w-5 h-5 text-blue-700" />
+                <div className="flex-1 flex min-h-0 overflow-hidden">
+                    {/* Editor Pane - 55% (hidden in preview-only mode) */}
+                    {!previewOnlyMode && (
+                        <div className="w-full lg:w-[55%] overflow-y-auto bg-white/50 px-6 py-10 md:px-12">
+                            <div className="max-w-4xl mx-auto space-y-8">
+                                {/* Horizontal Step Navigation */}
+                                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-2 border border-slate-200/60 shadow-sm">
+                                    <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar">
+                                        {sections.map((section) => (
+                                            <button
+                                                key={section.id}
+                                                onClick={() => setActiveSection(section.id)}
+                                                className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 whitespace-nowrap ${activeSection === section.id
+                                                    ? 'bg-gradient-to-r from-blue-700 to-blue-900 text-white shadow-lg scale-105'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                                    }`}
+                                            >
+                                                <div className="shrink-0">{section.icon}</div>
+                                                <span className="font-bold text-sm tracking-tight hidden sm:block">{section.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">
+                                            {sections.find(s => s.id === activeSection)?.label}
+                                        </h2>
+                                        <p className="text-sm text-slate-600 font-medium">
+                                            Complete your profile to build a winning resume.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-2xl p-8 border border-slate-200/60 shadow-lg">
+                                    {renderForm()}
+                                </div>
+
+                                {/* AI Integration Section */}
+                                <div className="bg-gradient-to-br from-slate-900 to-blue-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[100px]" />
+                                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px]" />
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                                                <Sparkles className="w-5 h-5 text-blue-300" />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs font-bold uppercase tracking-wider text-blue-300 block">AI Match Assistant</span>
+                                                <span className="text-xs text-slate-400">Optimize for job descriptions</span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <textarea
+                                                value={jdText}
+                                                onChange={(e) => setJdText(e.target.value)}
+                                                className="w-full h-32 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all resize-none"
+                                                placeholder="Paste job description here to get AI-powered optimization..."
+                                            />
+                                            <div className="flex flex-wrap gap-3">
+                                                <button
+                                                    onClick={handleAnalyzeJD}
+                                                    disabled={analyzingJD || optimizing}
+                                                    className="bg-white text-slate-900 hover:bg-slate-100 font-bold py-3 px-6 rounded-xl text-sm transition-all flex items-center gap-2 shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
+                                                >
+                                                    <Sparkles className="w-4 h-4" />
+                                                    {analyzingJD ? 'Analyzing…' : 'Analyze JD'}
+                                                </button>
+                                                <button
+                                                    onClick={handleOptimizeResume}
+                                                    disabled={analyzingJD || optimizing}
+                                                    className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl text-sm transition-all border border-white/20 backdrop-blur-sm flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                                >
+                                                    <Sparkles className="w-4 h-4" />
+                                                    {optimizing ? 'Optimizing…' : 'Optimize with AI'}
+                                                </button>
+                                            </div>
+
+                                            {/* Error message */}
+                                            {aiError && (
+                                                <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-4 text-sm text-red-200">
+                                                    {aiError}
+                                                </div>
                                             )}
-                                        </div>
-                                        <div>
-                                            <span className="font-bold text-slate-900 block">Resume Strength</span>
-                                            <span className="text-xs text-slate-500">
-                                                {analyzingStrength ? 'Analyzing with AI...' : 'AI-powered ATS score'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className={`font-bold text-3xl ${getResumeStrength().color}`}>
-                                            {getDisplayScore()}%
-                                        </span>
-                                        <span className={`text-sm font-bold px-3 py-1.5 rounded-full ${getResumeStrength().color} bg-white/60`}>
-                                            {getResumeStrength().level}
-                                        </span>
-                                    </div>
-                                </div>
 
-                                {/* Animated Progress Bar */}
-                                <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-1000 ease-out ${getDisplayScore() >= 70 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' :
-                                            getDisplayScore() >= 50 ? 'bg-gradient-to-r from-amber-500 to-amber-600' : 'bg-gradient-to-r from-red-500 to-red-600'
-                                            }`}
-                                        style={{ width: `${getDisplayScore()}%` }}
-                                    />
-                                </div>
+                                            {/* JD Analysis results */}
+                                            {jdAnalysis && (
+                                                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-5 space-y-4">
+                                                    <h3 className="text-sm font-bold text-blue-300 uppercase tracking-wider">JD Analysis</h3>
+                                                    {jdAnalysis.keywords?.length > 0 && (
+                                                        <div>
+                                                            <p className="text-xs text-slate-300 mb-2 font-semibold">Key Keywords</p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {jdAnalysis.keywords.map((k, i) => (
+                                                                    <span key={i} className="px-2.5 py-1 bg-blue-500/30 text-blue-100 text-xs rounded-lg border border-blue-400/30">
+                                                                        {k}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {jdAnalysis.skills?.required?.length > 0 && (
+                                                        <div>
+                                                            <p className="text-xs text-slate-300 mb-2 font-semibold">Required Skills</p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {jdAnalysis.skills.required.map((s, i) => (
+                                                                    <span key={i} className="px-2.5 py-1 bg-emerald-500/30 text-emerald-100 text-xs rounded-lg border border-emerald-400/30">
+                                                                        {s}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {jdAnalysis.skills?.preferred?.length > 0 && (
+                                                        <div>
+                                                            <p className="text-xs text-slate-300 mb-2 font-semibold">Preferred Skills</p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {jdAnalysis.skills.preferred.map((s, i) => (
+                                                                    <span key={i} className="px-2.5 py-1 bg-amber-500/30 text-amber-100 text-xs rounded-lg border border-amber-400/30">
+                                                                        {s}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {(jdAnalysis.experience || jdAnalysis.education) && (
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                                            {jdAnalysis.experience && (
+                                                                <div className="bg-white/5 rounded-lg p-3">
+                                                                    <span className="text-slate-400 block mb-1">Experience</span>
+                                                                    <span className="text-white">{jdAnalysis.experience}</span>
+                                                                </div>
+                                                            )}
+                                                            {jdAnalysis.education && (
+                                                                <div className="bg-white/5 rounded-lg p-3">
+                                                                    <span className="text-slate-400 block mb-1">Education</span>
+                                                                    <span className="text-white">{jdAnalysis.education}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
 
-                                {/* AI Breakdown */}
-                                {aiAnalysis && aiAnalysis.breakdown && (
-                                    <div className="mt-5 grid grid-cols-3 gap-3">
-                                        {Object.entries(aiAnalysis.breakdown).slice(0, 6).map(([key, value]) => (
-                                            <div key={key} className="text-center p-2 bg-white/80 rounded-lg border border-slate-200/60">
-                                                <p className="text-xs text-slate-500 capitalize mb-1">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                                                <p className="text-lg font-bold text-slate-900">{value}%</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Smart Suggestions */}
-                                {getSuggestions().length > 0 && (
-                                    <div className="mt-5 space-y-2">
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quick Wins</p>
-                                        {getSuggestions().map((suggestion, idx) => (
-                                            <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-white/80 border border-slate-200/60 hover:border-blue-300 transition-all">
-                                                <span className="text-xl">{suggestion.icon}</span>
-                                                <span className="text-sm text-slate-700 font-semibold flex-1">{suggestion.text}</span>
-                                                {suggestion.priority && (
-                                                    <span className={`text-xs font-bold px-2 py-1 rounded ${suggestion.priority === 'Critical' ? 'bg-red-100 text-red-700' :
-                                                        suggestion.priority === 'High' ? 'bg-orange-100 text-orange-700' :
-                                                            'bg-blue-100 text-blue-700'
-                                                        }`}>
-                                                        {suggestion.priority}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Horizontal Step Navigation */}
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-2 border border-slate-200/60 shadow-sm">
-                                <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar">
-                                    {sections.map((section) => (
-                                        <button
-                                            key={section.id}
-                                            onClick={() => setActiveSection(section.id)}
-                                            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 whitespace-nowrap ${activeSection === section.id
-                                                ? 'bg-gradient-to-r from-blue-700 to-blue-900 text-white shadow-lg scale-105'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                                                }`}
-                                        >
-                                            <div className="shrink-0">{section.icon}</div>
-                                            <span className="font-bold text-sm tracking-tight hidden sm:block">{section.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">
-                                        {sections.find(s => s.id === activeSection)?.label}
-                                    </h2>
-                                    <p className="text-sm text-slate-600 font-medium">
-                                        Complete your profile to build a winning resume.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-2xl p-8 border border-slate-200/60 shadow-lg">
-                                {renderForm()}
-                            </div>
-
-                            {/* AI Integration Section */}
-                            <div className="bg-gradient-to-br from-slate-900 to-blue-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[100px]" />
-                                <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px]" />
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
-                                            <Sparkles className="w-5 h-5 text-blue-300" />
-                                        </div>
-                                        <div>
-                                            <span className="text-xs font-bold uppercase tracking-wider text-blue-300 block">AI Match Assistant</span>
-                                            <span className="text-xs text-slate-400">Optimize for job descriptions</span>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <textarea
-                                            value={jdText}
-                                            onChange={(e) => setJdText(e.target.value)}
-                                            className="w-full h-32 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all resize-none"
-                                            placeholder="Paste job description here to get AI-powered optimization..."
-                                        />
-                                        <div className="flex flex-wrap gap-3">
-                                            <button
-                                                onClick={handleAnalyzeJD}
-                                                className="bg-white text-slate-900 hover:bg-slate-100 font-bold py-3 px-6 rounded-xl text-sm transition-all flex items-center gap-2 shadow-xl"
-                                            >
-                                                <Sparkles className="w-4 h-4" />
-                                                Analyze JD
-                                            </button>
-                                            <button
-                                                onClick={handleOptimizeResume}
-                                                className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl text-sm transition-all border border-white/20 backdrop-blur-sm"
-                                            >
-                                                Optimize with AI
-                                            </button>
+                                            {/* ATS Optimization results */}
+                                            {atsResult && (
+                                                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-5 space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <h3 className="text-sm font-bold text-blue-300 uppercase tracking-wider">ATS Match Score</h3>
+                                                        <span className={`text-2xl font-bold ${atsResult.score >= 75 ? 'text-emerald-300' : atsResult.score >= 50 ? 'text-amber-300' : 'text-red-300'}`}>
+                                                            {atsResult.score}%
+                                                        </span>
+                                                    </div>
+                                                    {atsResult.missingKeywords?.length > 0 && (
+                                                        <div>
+                                                            <p className="text-xs text-slate-300 mb-2 font-semibold">Missing Keywords (auto-added to your skills)</p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {atsResult.missingKeywords.map((k, i) => (
+                                                                    <span key={i} className="px-2.5 py-1 bg-red-500/30 text-red-100 text-xs rounded-lg border border-red-400/30">
+                                                                        {k}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {atsResult.foundKeywords?.length > 0 && (
+                                                        <div>
+                                                            <p className="text-xs text-slate-300 mb-2 font-semibold">Matched Keywords</p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {atsResult.foundKeywords.map((k, i) => (
+                                                                    <span key={i} className="px-2.5 py-1 bg-emerald-500/30 text-emerald-100 text-xs rounded-lg border border-emerald-400/30">
+                                                                        {k}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {atsResult.suggestions?.length > 0 && (
+                                                        <div>
+                                                            <p className="text-xs text-slate-300 mb-2 font-semibold">Suggestions</p>
+                                                            <ul className="space-y-1.5">
+                                                                {atsResult.suggestions.map((s, i) => (
+                                                                    <li key={i} className="text-xs text-slate-200 flex gap-2">
+                                                                        <span className="text-blue-300">•</span>
+                                                                        <span>{s}</span>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Preview Pane - 45% - Desktop Only */}
-                    <div className="hidden lg:flex w-[45%] bg-gradient-to-br from-slate-100 to-slate-200 border-l border-slate-300 overflow-hidden flex-col">
+                    {/* Preview Pane — expands to full viewport in preview-only mode.
+                        `preview-pane-fullheight` guarantees the pane stretches to the full
+                        height of its flex parent (top → bottom of the page) in both modes. */}
+                    <div
+                        className={`${previewOnlyMode
+                            ? 'flex w-full preview-pane-fullheight'
+                            : 'hidden lg:flex w-[45%] preview-pane-fullheight'
+                            } bg-gradient-to-br from-slate-100 to-slate-200 ${previewOnlyMode ? '' : 'border-l border-slate-300'} overflow-hidden flex-col`}
+                    >
                         <div className="h-14 bg-white/60 backdrop-blur-sm flex items-center justify-between px-6 shrink-0 border-b border-slate-300/60">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg flex items-center justify-center shadow-sm">
@@ -1035,7 +1034,9 @@ const ResumeBuilderPage = () => {
                                 </div>
                                 <div>
                                     <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">Live Preview</span>
-                                    <span className="text-xs text-slate-500">Real-time updates</span>
+                                    <span className="text-xs text-slate-500">
+                                        {previewOnlyMode ? 'Full-screen preview — click "Edit" to return' : 'Real-time updates'}
+                                    </span>
                                 </div>
                             </div>
                             <div className="flex gap-2">
@@ -1044,8 +1045,13 @@ const ResumeBuilderPage = () => {
                                 <div className="w-3 h-3 rounded-full bg-green-400" />
                             </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-8 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] flex items-start justify-center">
-                            <div className="w-[8.5in] h-fit bg-white shadow-2xl origin-top scale-[0.85]" data-resume-export="true">
+                        {/* Inner scroll region — fills the pane height and scrolls internally
+                            so the preview never pushes the layout beyond the viewport. */}
+                        <div className="preview-scroll-fullheight overflow-y-auto p-8 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] flex items-start justify-center">
+                            <div
+                                className={`w-[8.5in] h-fit bg-white shadow-2xl origin-top ${previewOnlyMode ? 'scale-100' : 'scale-[0.85]'}`}
+                                data-resume-export="true"
+                            >
                                 <ResumePreview />
                             </div>
                         </div>

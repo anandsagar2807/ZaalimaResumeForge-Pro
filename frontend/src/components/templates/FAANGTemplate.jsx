@@ -156,7 +156,8 @@ const FAANGTemplate = ({ data, scale = 1, isPreview = false }) => {
         letterSpacing: '-0.5px',
         color: '#000000',
         lineHeight: '1.1',
-        marginBottom: '3px'
+        marginBottom: '3px',
+        textAlign: 'center'
     };
 
     const contactStyle = {
@@ -164,7 +165,8 @@ const FAANGTemplate = ({ data, scale = 1, isPreview = false }) => {
         color: '#444444',
         lineHeight: '1.4',
         marginBottom: '6px',
-        letterSpacing: '0.2px'
+        letterSpacing: '0.2px',
+        textAlign: 'center'
     };
 
     const contactLink = {
@@ -537,10 +539,10 @@ const FAANGTemplate = ({ data, scale = 1, isPreview = false }) => {
             </div>
 
             {/* ── SECTIONS WITH DIVIDERS ── */}
-            {sections.map((section, index) => (
+            {sections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
                 <React.Fragment key={section.key}>
                     {section.content}
-                    {index < sections.length - 1 && <div style={dividerStyle} />}
+                    {index < arr.length - 1 && <div style={dividerStyle} />}
                 </React.Fragment>
             ))}
         </div>

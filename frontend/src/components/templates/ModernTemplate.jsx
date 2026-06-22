@@ -173,7 +173,7 @@ const ModernTemplate = ({ data, scale = 1, isPreview = false }) => {
   }
 
   return (
-    <div style={containerStyle} className="modern-template">
+    <div style={isPreview ? { ...containerStyle, maxHeight: 'none', overflow: 'visible' } : containerStyle} className="modern-template">
       {/* Sidebar */}
       <div style={sidebarStyle}>
         <div style={profileImageStyle} />
@@ -206,7 +206,7 @@ const ModernTemplate = ({ data, scale = 1, isPreview = false }) => {
         </div>
 
         {/* Skills */}
-        {skills && (
+        {skills && !(data?.hiddenSections || []).includes('skills') && (
           <div style={sidebarSectionStyle}>
             <h3 style={sidebarTitleStyle}>Skills</h3>
             {skills.technical?.slice(0, 6).map((skill, i) => (
@@ -221,7 +221,7 @@ const ModernTemplate = ({ data, scale = 1, isPreview = false }) => {
         )}
 
         {/* Education */}
-        {education && education.length > 0 && (
+        {education && education.length > 0 && !(data?.hiddenSections || []).includes('education') && (
           <div style={{ ...sidebarSectionStyle, borderBottom: 'none' }}>
             <h3 style={sidebarTitleStyle}>Education</h3>
             {education.map((edu, i) => (
@@ -237,10 +237,10 @@ const ModernTemplate = ({ data, scale = 1, isPreview = false }) => {
 
       {/* Main Content */}
       <div style={mainStyle}>
-        {mainSections.map((section, index) => (
+        {mainSections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
           <React.Fragment key={section.key}>
             {section.content}
-            {index < mainSections.length - 1 && <div style={dividerStyle} />}
+            {index < arr.length - 1 && <div style={dividerStyle} />}
           </React.Fragment>
         ))}
       </div>

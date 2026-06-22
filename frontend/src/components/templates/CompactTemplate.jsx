@@ -203,7 +203,7 @@ const CompactTemplate = ({ data, scale = 1, isPreview = false }) => {
   }
 
   return (
-    <div style={containerStyle} className="compact-template">
+    <div style={isPreview ? { ...containerStyle, maxHeight: 'none', overflow: 'visible' } : containerStyle} className="compact-template">
       {/* Compact Header */}
       <div style={headerStyle}>
         <div>
@@ -217,11 +217,10 @@ const CompactTemplate = ({ data, scale = 1, isPreview = false }) => {
         </div>
       </div>
 
-      {/* Sections with dividers */}
-      {sections.map((section, index) => (
+      {sections.filter(s => !(data?.hiddenSections || []).includes(s.key)).map((section, index, arr) => (
         <React.Fragment key={section.key}>
           {section.content}
-          {index < sections.length - 1 && <div style={dividerStyle} />}
+          {index < arr.length - 1 && <div style={dividerStyle} />}
         </React.Fragment>
       ))}
     </div>
