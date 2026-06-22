@@ -11,8 +11,25 @@ const app = express();
 connectDB();
 
 // Middleware
+// CORS: allow the deployed frontend (Vercel) plus local dev origins.
+// CLIENT_URL can be a single URL or a comma-separated list (e.g.
+// "https://carrer-forge-pro2.vercel.app,https://carrer-forge-pro2-git-main.vercel.app").
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173,http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOriginCheck = (origin, callback) => {
+  // Allow requests with no origin (curl, Postman, server-to-server, health checks)
+  if (!origin) return callback(null, true);
+  // Allow any Vercel preview/production domain for this project
+  if (origin.endsWith('.vercel.app')) return callback(null, true);
+  if (allowedOrigins.includes(origin)) return callback(null, true);
+  callback(new Error(`Origin ${origin} not allowed by CORS`));
+};
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: corsOriginCheck,
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -26,18 +43,18 @@ const RATE_LIMIT_MAX = 30; // requests per window
 const rateLimit = (req, res, next) => {
   const ip = req.ip || req.connection.remoteAddress;
   const now = Date.now();
-  
+
   if (!rateLimiter[ip]) {
     rateLimiter[ip] = [];
   }
-  
+
   // Clean old entries
   rateLimiter[ip] = rateLimiter[ip].filter(time => now - time < RATE_LIMIT_WINDOW);
-  
+
   if (rateLimiter[ip].length >= RATE_LIMIT_MAX) {
     return res.status(429).json({ error: 'Too many requests. Please try again later.' });
   }
-  
+
   rateLimiter[ip].push(now);
   next();
 };
